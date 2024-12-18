@@ -1,68 +1,154 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
+  url = env("DATABASE_URL")
 }
 
+model User {
+  id            String       @id @default(uuid())
+  email         String       @unique
+  name          String?
+  image         String?   
+  emailVerified DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  settings      UserSettings? 
+}
 
 model UserSettings {
-  userId String @id
-  currency String
+  id                 String    @id @default(uuid())
+  userId            String    @unique
+  currency          String    @default("ARS")
+  language          String    @default("es")
+  notifications     Boolean   @default(true) 
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Category {
   createdAt DateTime @default(now())
-  name String
-  userId String
-  icon String
-  type String @default("income")
-
+  name      String
+  userId    String
+  icon      String
+  type      String   @default("income")
+  budget    Float?   // presupuesto mensual por categoría
+  color     String?  // para personalización visual
+  
   @@unique([name, userId, type])
 }
 
+model SavingsGoal {
+  id            String    @id @default(uuid())
+  userId        String
+  name          String
+  targetAmount  Float
+  currentAmount Float     @default(0)
+  deadline      DateTime?
+  createdAt     DateTime  @default(now())
+}
+
+
 model Transaction {
-  id String @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
-
-  amount Float 
-  description String
-  date DateTime
-  userId String
-  type String @default("income")
-
-  category String
-  categoryIcon String
+  id              String    @id @default(uuid())
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  amount          Float
+  description     String
+  date            DateTime
+  userId          String
+  type            String    @default("income")
+  category        String
+  categoryIcon    String
+  status          String    @default("completed") // completed, pending, cancelled
+  attachments     String?   // URLs de comprobantes
+  recurrent       Boolean   @default(false)
+  // Para implementación futura:
+  // walletId        String?   // Referencia a Wallet
+  // walletName      String?   // Nombre de la billetera
+  // externalId      String?   // ID en el servicio externo
+  // provider        String?   // "mercadopago", "uala" si aplica
 }
 
 model MonthHistory {
-  userId String
-  day Int
-  month Int
-  year Int
-  income Float
-  expense Float
+  userId    String
+  day       Int
+  month     Int
+  year      Int
+  income    Float
+  expense   Float
+  // walletId  String?  // Para implementación futura
 
   @@id([day, month, year, userId])
 }
 
-
 model YearHistory {
-  userId String
-  month Int
-  year Int
-  income Float
-  expense Float
+  userId    String
+  month     Int
+  year      Int
+  income    Float
+  expense   Float
+  // walletId  String?  // Para implementación futura
 
   @@id([month, year, userId])
 }
 
+model PaymentReminder {
+  id          String   @id @default(uuid())
+  userId      String
+  title       String
+  amount      Float
+  dueDate     DateTime
+  frequency   String?  // monthly, yearly, once
+  status      String   @default("pending")
+}
+
+
+// Para implementación futura de integración con billeteras virtuales
+// model Wallet {
+//   id          String   @id @default(uuid())
+//   userId      String
+//   name        String   // "Mercado Pago", "Uala", etc.
+//   type        String   // "virtual", "bank", "cash"
+//   balance     Float    @default(0)
+//   currency    String   @default("ARS")
+//   icon        String?
+//   color       String?
+//   isDefault   Boolean  @default(false)
+//   createdAt   DateTime @default(now())
+//   updatedAt   DateTime @updatedAt
+//
+//   @@unique([userId, name])
+// }
+
+// model WalletConnection {
+//   id            String    @id @default(uuid())
+//   userId        String
+//   walletId      String    // Referencia a Wallet
+//   provider      String    // "mercadopago", "uala"
+//   accessToken   String    // Token de acceso a la API
+//   refreshToken  String?   // Para renovar el access token
+//   externalId    String    // ID de la cuenta en el servicio externo
+//   status        String    @default("active") // active, expired, revoked
+//   lastSync      DateTime  @default(now())
+//   createdAt     DateTime  @default(now())
+//   updatedAt     DateTime  @updatedAt
+//
+//   @@unique([userId, provider])
+// }
+
+// model WebhookEvent {
+//   id            String    @id @default(uuid())
+//   provider      String    // "mercadopago", "uala"
+//   eventType     String    // "payment.created", "transfer.created"
+//   eventId       String    // ID único del evento
+//   data          Json      // Datos completos del webhook
+//   processed     Boolean   @default(false)
+//   processedAt   DateTime?
+//   createdAt     DateTime  @default(now())
+//   
+//   @@unique([provider, eventId])
+// }
