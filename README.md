@@ -2,9 +2,7 @@
 
 ## 🌟 Descripcion del Proyecto
 
-P2P es una aplicacion de gestion financiera personal de vanguardia, desarrollada
-con tecnologias web modernas, enfocada en ofrecer una experiencia de usuario
-excepcional y un seguimiento financiero integral.
+P2P es una aplicacion de gestion financiera personal realizada cómo proyecto final para la academia crombie.
 
 ## 🚀 Caracteristicas Principales
 
