@@ -7,148 +7,183 @@ datasource db {
   url = env("DATABASE_URL")
 }
 
+enum TransactionStatus {
+  COMPLETED
+  PENDING
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum AccountType {
+  CASH
+  BANK_ACCOUNT
+  CREDIT_CARD
+  SAVINGS
+  INVESTMENT
+}
+
+enum RecurrencyFrequency {
+  NONE
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+// Modelo de Usuario
 model User {
-  id            String       @id @default(uuid())
-  email         String       @unique
-  name          String?
-  image         String?   
-  emailVerified DateTime?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  settings      UserSettings? 
+  id             String           @id @default(uuid())
+  email          String           @unique
+  name           String?
+  image          String?
+  language       String           @default("es")
+  notifications  Boolean          @default(true)
+  currencyId     String          // Moneda base del usuario
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  accounts       Account[]
+  categories     Category[]
+  savingsGoals   SavingsGoal[]
+  reminders      PaymentReminder[]
+  currency       Currency         @relation(fields: [currencyId], references: [id])
+
+  MonthHistory MonthHistory[]
+
+  YearHistory YearHistory[]
 }
 
-model UserSettings {
-  id                 String    @id @default(uuid())
-  userId            String    @unique
-  currency          String    @default("ARS")
-  language          String    @default("es")
-  notifications     Boolean   @default(true) 
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+// Monedas
+model Currency {
+  id           String    @id @default(uuid())
+  code         String    @unique // USD, EUR, etc.
+  name         String
+  symbol       String
+  users        User[]
+  accounts     Account[]
 }
 
+// Cuentas/Billeteras
+model Account {
+  id              String        @id @default(uuid())
+  userId          String
+  name            String
+  type            AccountType
+  currencyId      String
+  currentBalance  Decimal       @default(0)
+  isActive        Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currency        Currency      @relation(fields: [currencyId], references: [id])
+  transactions    Transaction[]
+  transfersFrom   Transfer[]    @relation("FromAccount")
+  transfersTo     Transfer[]    @relation("ToAccount")
+
+  @@unique([userId, name])
+}
+
+// Categorías
 model Category {
-  createdAt DateTime @default(now())
-  name      String
-  userId    String
-  icon      String
-  type      String   @default("income")
-  budget    Float?   // presupuesto mensual por categoría
-  color     String?  // para personalización visual
-  
-  @@unique([name, userId, type])
+  id            String        @id @default(uuid())
+  name          String
+  userId        String
+  isExpense     Boolean       @default(true)  // true para gastos, false para ingresos
+  icon          String?
+  color         String?
+  monthlyBudget Decimal?      // Solo para categorías de gastos
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions  Transaction[]
+
+  @@unique([name, userId, isExpense])
 }
 
+// Transacciones
+model Transaction {
+  id              String           @id @default(uuid())
+  accountId       String
+  categoryId      String
+  amount          Decimal
+  status          TransactionStatus @default(COMPLETED)
+  date            DateTime
+  notes           String?
+  attachments     String?          // URLs de comprobantes
+  isRecurring     Boolean          @default(false)
+  frequency       RecurrencyFrequency? 
+  nextExecutionDate DateTime?      
+  endRecurrencyDate DateTime?      
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  account         Account          @relation(fields: [accountId], references: [id])
+  category        Category         @relation(fields: [categoryId], references: [id])
+}
+
+// Transferencias entre cuentas
+model Transfer {
+  id                String    @id @default(uuid())
+  fromAccountId     String
+  toAccountId       String
+  amount            Decimal
+  date             DateTime
+  notes            String?
+  createdAt        DateTime   @default(now())
+  fromAccount      Account    @relation("FromAccount", fields: [fromAccountId], references: [id])
+  toAccount        Account    @relation("ToAccount", fields: [toAccountId], references: [id])
+}
+
+// Metas de Ahorro
 model SavingsGoal {
   id            String    @id @default(uuid())
   userId        String
   name          String
-  targetAmount  Float
-  currentAmount Float     @default(0)
+  targetAmount  Decimal
+  currentAmount Decimal   @default(0)
   deadline      DateTime?
   createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-
-model Transaction {
-  id              String    @id @default(uuid())
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  amount          Float
-  description     String
-  date            DateTime
-  userId          String
-  type            String    @default("income")
-  category        String
-  categoryIcon    String
-  status          String    @default("completed") // completed, pending, cancelled
-  attachments     String?   // URLs de comprobantes
-  recurrent       Boolean   @default(false)
-  // Para implementación futura:
-  // walletId        String?   // Referencia a Wallet
-  // walletName      String?   // Nombre de la billetera
-  // externalId      String?   // ID en el servicio externo
-  // provider        String?   // "mercadopago", "uala" si aplica
+// Recordatorios de Pago
+model PaymentReminder {
+  id            String             @id @default(uuid())
+  userId        String
+  title         String
+  amount        Decimal
+  dueDate       DateTime
+  frequency     RecurrencyFrequency @default(NONE)
+  status        PaymentStatus      @default(PENDING)
+  categoryId    String?            // Opcional, para vincular con una categoría
+  user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model MonthHistory {
+  id      Int      @id @default(autoincrement())
   userId    String
   day       Int
   month     Int
   year      Int
-  income    Float
-  expense   Float
-  // walletId  String?  // Para implementación futura
-
-  @@id([day, month, year, userId])
+  income    Decimal  @db.Decimal(15,2)
+  expense   Decimal  @db.Decimal(15,2)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+// Estadísticas mensuales por usuario (como ya lo tienes)
 model YearHistory {
-  userId    String
+  id      Int      @id @default(autoincrement())  
   month     Int
   year      Int
-  income    Float
-  expense   Float
-  // walletId  String?  // Para implementación futura
-
-  @@id([month, year, userId])
-}
-
-model PaymentReminder {
-  id          String   @id @default(uuid())
-  userId      String
-  title       String
-  amount      Float
-  dueDate     DateTime
-  frequency   String?  // monthly, yearly, once
-  status      String   @default("pending")
+  income    Decimal  @db.Decimal(15,2)
+  expense   Decimal  @db.Decimal(15,2)
+  userId  String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 
-// Para implementación futura de integración con billeteras virtuales
-// model Wallet {
-//   id          String   @id @default(uuid())
-//   userId      String
-//   name        String   // "Mercado Pago", "Uala", etc.
-//   type        String   // "virtual", "bank", "cash"
-//   balance     Float    @default(0)
-//   currency    String   @default("ARS")
-//   icon        String?
-//   color       String?
-//   isDefault   Boolean  @default(false)
-//   createdAt   DateTime @default(now())
-//   updatedAt   DateTime @updatedAt
-//
-//   @@unique([userId, name])
-// }
-
-// model WalletConnection {
-//   id            String    @id @default(uuid())
-//   userId        String
-//   walletId      String    // Referencia a Wallet
-//   provider      String    // "mercadopago", "uala"
-//   accessToken   String    // Token de acceso a la API
-//   refreshToken  String?   // Para renovar el access token
-//   externalId    String    // ID de la cuenta en el servicio externo
-//   status        String    @default("active") // active, expired, revoked
-//   lastSync      DateTime  @default(now())
-//   createdAt     DateTime  @default(now())
-//   updatedAt     DateTime  @updatedAt
-//
-//   @@unique([userId, provider])
-// }
-
-// model WebhookEvent {
-//   id            String    @id @default(uuid())
-//   provider      String    // "mercadopago", "uala"
-//   eventType     String    // "payment.created", "transfer.created"
-//   eventId       String    // ID único del evento
-//   data          Json      // Datos completos del webhook
-//   processed     Boolean   @default(false)
-//   processedAt   DateTime?
-//   createdAt     DateTime  @default(now())
-//   
-//   @@unique([provider, eventId])
-// }
