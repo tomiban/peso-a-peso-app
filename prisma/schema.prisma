@@ -13,6 +13,11 @@ enum TransactionStatus {
   CANCELLED
 }
 
+enum CategoryType {
+  EXPENSE
+  INCOME
+}
+
 enum PaymentStatus {
   PENDING
   PAID
@@ -93,7 +98,7 @@ model Category {
   id            String        @id @default(uuid())
   name          String
   userId        String
-  isExpense     Boolean       @default(true)  // true para gastos, false para ingresos
+  type          CategoryType?
   icon          String?
   color         String?
   monthlyBudget Decimal?      // Solo para categorías de gastos
@@ -102,7 +107,7 @@ model Category {
   user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions  Transaction[]
 
-  @@unique([name, userId, isExpense])
+  @@unique([name, userId, type])
 }
 
 // Transacciones
@@ -115,7 +120,6 @@ model Transaction {
   date            DateTime
   notes           String?
   attachments     String?          // URLs de comprobantes
-  isRecurring     Boolean          @default(false)
   frequency       RecurrencyFrequency? 
   nextExecutionDate DateTime?      
   endRecurrencyDate DateTime?      
