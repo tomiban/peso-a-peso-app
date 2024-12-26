@@ -51,6 +51,7 @@ enum Frecuencia {
 model User {
   id             String           @id @default(uuid())
   email          String           @unique                 // Email único para identificación
+  password       String                                    // Contraseña encriptada
   name           String?                                  // Nombre del usuario (opcional)
   image          String?                                  // Avatar o foto de perfil (opcional)
   language       String           @default("es")          // Idioma preferido, español por defecto
