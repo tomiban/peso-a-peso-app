@@ -7,183 +7,207 @@ datasource db {
   url = env("DATABASE_URL")
 }
 
-enum TransactionStatus {
-  COMPLETED
-  PENDING
-  CANCELLED
+// Estado de las transacciones financieras
+enum EstadoTransaccion {
+  COMPLETADA    // Transacción finalizada y confirmada
+  PENDIENTE     // Transacción en proceso o esperando confirmación
+  CANCELADA     // Transacción cancelada o revertida
 }
 
-enum PaymentStatus {
-  PENDING
-  PAID
-  OVERDUE
-  CANCELLED
+// Tipo de categoría para clasificar movimientos
+enum TipoCategoria {
+  GASTO    // Salida de dinero (gastos, compras, pagos)
+  INGRESO  // Entrada de dinero (salario, ventas, etc.)
 }
 
-enum AccountType {
-  CASH
-  BANK_ACCOUNT
-  CREDIT_CARD
-  SAVINGS
-  INVESTMENT
+// Estado de los pagos programados o recordatorios
+enum EstadoPago {
+  PENDIENTE   // Pago aún no realizado dentro del plazo
+  PAGADO      // Pago completado satisfactoriamente
+  VENCIDO     // Pago no realizado y fuera de plazo
+  CANCELADO   // Pago cancelado o anulado
 }
 
-enum RecurrencyFrequency {
-  NONE
-  DAILY
-  WEEKLY
-  MONTHLY
-  YEARLY
+// Tipos de cuentas financieras disponibles
+enum TipoCuenta {
+  EFECTIVO       // Dinero físico
+  CUENTA_BANCO   // Cuenta corriente o de ahorro bancaria
+  TARJETA_CREDITO // Tarjeta de crédito
+  AHORROS        // Cuenta específica para ahorros
+  INVERSION      // Cuenta para inversiones (acciones, fondos, etc.)
 }
 
-// Modelo de Usuario
+// Frecuencia de recurrencia para transacciones y pagos
+enum Frecuencia {
+  NINGUNA   // Sin recurrencia, evento único
+  DIARIA    // Se repite todos los días
+  SEMANAL   // Se repite cada semana
+  MENSUAL   // Se repite cada mes
+  ANUAL     // Se repite cada año
+}
+
+// Usuarios del sistema
+// Modelo central que gestiona toda la información personal y preferencias
 model User {
   id             String           @id @default(uuid())
-  email          String           @unique
-  name           String?
-  image          String?
-  language       String           @default("es")
-  notifications  Boolean          @default(true)
-  currencyId     String          // Moneda base del usuario
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  accounts       Account[]
-  categories     Category[]
-  savingsGoals   SavingsGoal[]
-  reminders      PaymentReminder[]
+  email          String           @unique                 // Email único para identificación
+  password       String                                    // Contraseña encriptada
+  name           String?                                  // Nombre del usuario (opcional)
+  image          String?                                  // Avatar o foto de perfil (opcional)
+  language       String           @default("es")          // Idioma preferido, español por defecto
+  notifications  Boolean          @default(true)          // Preferencia de notificaciones
+  currencyId     String                                  // ID de la moneda base del usuario
+  createdAt      DateTime         @default(now())        // Fecha de creación del usuario
+  updatedAt      DateTime         @updatedAt             // Última actualización del perfil
+
+  accounts       Account[]                               // Cuentas financieras del usuario
+  categories     Category[]                              // Categorías personalizadas
+  savingsGoals   SavingsGoal[]                          // Metas de ahorro
+  reminders      PaymentReminder[]                       // Recordatorios de pago
   currency       Currency         @relation(fields: [currencyId], references: [id])
-
-  MonthHistory MonthHistory[]
-
-  YearHistory YearHistory[]
+  MonthHistory   MonthHistory[]                          // Historial mensual
+  YearHistory    YearHistory[]                          // Historial anual
 }
 
-// Monedas
+// Monedas disponibles en el sistema
 model Currency {
   id           String    @id @default(uuid())
-  code         String    @unique // USD, EUR, etc.
-  name         String
-  symbol       String
-  users        User[]
-  accounts     Account[]
+  code         String    @unique                         // Código ISO (USD, EUR, etc.)
+  name         String                                    // Nombre completo de la moneda
+  symbol       String                                    // Símbolo de la moneda
+  users        User[]                                    // Usuarios que usan esta moneda
+  accounts     Account[]                                 // Cuentas en esta moneda
 }
 
-// Cuentas/Billeteras
+// Cuentas financieras del usuario
 model Account {
   id              String        @id @default(uuid())
-  userId          String
-  name            String
-  type            AccountType
-  currencyId      String
-  currentBalance  Decimal       @default(0)
-  isActive        Boolean       @default(true)
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  userId          String                                 // ID del usuario propietario
+  name            String                                 // Nombre de la cuenta
+  type            TipoCuenta                            // Tipo de cuenta
+  currencyId      String                                // Moneda de la cuenta
+  currentBalance  Decimal       @default(0)             // Saldo actual
+  isActive        Boolean       @default(true)          // Estado de la cuenta
+  createdAt       DateTime      @default(now())         // Fecha de creación
+  updatedAt       DateTime      @updatedAt              // Última actualización
+
+
   user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   currency        Currency      @relation(fields: [currencyId], references: [id])
-  transactions    Transaction[]
-  transfersFrom   Transfer[]    @relation("FromAccount")
-  transfersTo     Transfer[]    @relation("ToAccount")
+  transactions    Transaction[]                         // Transacciones asociadas
+  transfersFrom   Transfer[]    @relation("FromAccount") // Transferencias salientes
+  transfersTo     Transfer[]    @relation("ToAccount")   // Transferencias entrantes
 
-  @@unique([userId, name])
+  @@unique([userId, name])                              // No puede haber dos cuentas con el mismo nombre por usuario
 }
 
-// Categorías
+// Categorías para clasificar transacciones
 model Category {
   id            String        @id @default(uuid())
-  name          String
-  userId        String
-  isExpense     Boolean       @default(true)  // true para gastos, false para ingresos
-  icon          String?
-  color         String?
-  monthlyBudget Decimal?      // Solo para categorías de gastos
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  transactions  Transaction[]
+  name          String                                  // Nombre de la categoría
+  userId        String                                  // Usuario propietario
+  type          TipoCategoria?                         // Tipo (Gasto/Ingreso)
+  icon          String?                                // Ícono representativo
+  color         String?                                // Color para UI
+  monthlyBudget Decimal?                              // Presupuesto mensual (opcional)
+  createdAt     DateTime      @default(now())         // Fecha de creación
+  updatedAt     DateTime      @updatedAt              // Última actualización
+  
 
-  @@unique([name, userId, isExpense])
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions  Transaction[]                         // Transacciones en esta categoría
+
+  @@unique([name, userId, type])                      // No puede haber categorías duplicadas por usuario y tipo
 }
 
-// Transacciones
+// Transacciones financieras
 model Transaction {
-  id              String           @id @default(uuid())
-  accountId       String
-  categoryId      String
-  amount          Decimal
-  status          TransactionStatus @default(COMPLETED)
-  date            DateTime
-  notes           String?
-  attachments     String?          // URLs de comprobantes
-  isRecurring     Boolean          @default(false)
-  frequency       RecurrencyFrequency? 
-  nextExecutionDate DateTime?      
-  endRecurrencyDate DateTime?      
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  account         Account          @relation(fields: [accountId], references: [id])
-  category        Category         @relation(fields: [categoryId], references: [id])
+  id                String             @id @default(uuid())
+  accountId         String                               // Cuenta asociada
+  categoryId        String                               // Categoría de la transacción
+  amount            Decimal                              // Monto de la transacción
+  status            EstadoTransaccion  @default(COMPLETADA) // Estado actual
+  date              DateTime                             // Fecha de la transacción
+  notes             String?                              // Notas adicionales
+  attachments       String?                              // URLs de comprobantes
+  frequency         Frecuencia?               // Frecuencia de recurrencia
+  nextExecutionDate DateTime?                            // Próxima fecha de ejecución
+  endRecurrencyDate DateTime?                            // Fecha fin de recurrencia
+  createdAt         DateTime           @default(now())   // Fecha de creación
+  updatedAt         DateTime           @updatedAt        // Última actualización
+
+
+  account           Account            @relation(fields: [accountId], references: [id])
+  category          Category           @relation(fields: [categoryId], references: [id])
 }
 
 // Transferencias entre cuentas
 model Transfer {
   id                String    @id @default(uuid())
-  fromAccountId     String
-  toAccountId       String
-  amount            Decimal
-  date             DateTime
-  notes            String?
-  createdAt        DateTime   @default(now())
+  fromAccountId     String                               // Cuenta origen
+  toAccountId       String                               // Cuenta destino
+  amount            Decimal                              // Monto a transferir
+  date             DateTime                              // Fecha de la transferencia
+  notes            String?                               // Notas adicionales
+  createdAt        DateTime   @default(now())            // Fecha de creación
+  
+
   fromAccount      Account    @relation("FromAccount", fields: [fromAccountId], references: [id])
   toAccount        Account    @relation("ToAccount", fields: [toAccountId], references: [id])
 }
 
-// Metas de Ahorro
+// Metas de ahorro
 model SavingsGoal {
   id            String    @id @default(uuid())
-  userId        String
-  name          String
-  targetAmount  Decimal
-  currentAmount Decimal   @default(0)
-  deadline      DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  userId        String                                   // Usuario propietario
+  name          String                                   // Nombre de la meta
+  targetAmount  Decimal                                 // Monto objetivo
+  currentAmount Decimal   @default(0)                   // Monto actual ahorrado
+  deadline      DateTime?                               // Fecha límite (opcional)
+  createdAt     DateTime  @default(now())               // Fecha de creación
+  updatedAt     DateTime  @updatedAt                    // Última actualización
+  
+
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-// Recordatorios de Pago
+// Recordatorios de pago
 model PaymentReminder {
-  id            String             @id @default(uuid())
-  userId        String
-  title         String
-  amount        Decimal
-  dueDate       DateTime
-  frequency     RecurrencyFrequency @default(NONE)
-  status        PaymentStatus      @default(PENDING)
-  categoryId    String?            // Opcional, para vincular con una categoría
-  user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id            String                @id @default(uuid())
+  userId        String                                   // Usuario propietario
+  title         String                                   // Título del recordatorio
+  amount        Decimal                                 // Monto a pagar
+  dueDate       DateTime                                // Fecha de vencimiento
+  frequency     Frecuencia @default(NINGUNA) // Frecuencia de repetición
+  status        EstadoPago           @default(PENDIENTE) // Estado del pago
+  categoryId    String?                                 // Categoría asociada (opcional)
+  
+
+  user          User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+// Historial mensual de movimientos
 model MonthHistory {
-  id      Int      @id @default(autoincrement())
-  userId    String
-  day       Int
-  month     Int
-  year      Int
-  income    Decimal  @db.Decimal(15,2)
-  expense   Decimal  @db.Decimal(15,2)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        Int       @id @default(autoincrement())
+  userId    String                                      // Usuario propietario
+  day       Int                                        // Día del mes
+  month     Int                                        // Mes
+  year      Int                                        // Año
+  income    Decimal   @db.Decimal(15,2)                // Total de ingresos
+  expense   Decimal   @db.Decimal(15,2)                // Total de gastos
+  
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-// Estadísticas mensuales por usuario (como ya lo tienes)
+// Historial anual de movimientos
 model YearHistory {
-  id      Int      @id @default(autoincrement())  
-  month     Int
-  year      Int
-  income    Decimal  @db.Decimal(15,2)
-  expense   Decimal  @db.Decimal(15,2)
-  userId  String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        Int       @id @default(autoincrement())
+  month     Int                                        // Mes
+  year      Int                                        // Año
+  income    Decimal   @db.Decimal(15,2)                // Total de ingresos
+  expense   Decimal   @db.Decimal(15,2)                // Total de gastos
+  userId    String                                     // Usuario propietario
+  
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
-
-
