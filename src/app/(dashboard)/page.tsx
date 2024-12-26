@@ -5,13 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-3xl font-bold">Hola, Tomas! 👋</h1>
-
-      <h2 className="text-2xl font-semibold">Overview</h2>
+      <h1 className="text-2xl font-semibold">Resumen</h1>
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Income</CardTitle>
+            <CardTitle className="text-sm font-medium">Ingresos</CardTitle>
             <ArrowUpIcon className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
@@ -20,7 +18,7 @@ export default function DashboardPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Expense</CardTitle>
+            <CardTitle className="text-sm font-medium">Gastos</CardTitle>
             <ArrowDownIcon className="h-4 w-4 text-red-500" />
           </CardHeader>
           <CardContent>
@@ -37,39 +35,45 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Incomes by category</CardTitle>
+            <CardTitle>Ingresos por categoría</CardTitle>
           </CardHeader>
           <CardContent className="flex h-[300px] items-center justify-center text-sm text-muted-foreground">
             <div className="text-center">
-              <p>No data for the selected period</p>
-              <p>Try selecting a different period or try adding new incomes</p>
+              <p>No hay datos para el período seleccionado</p>
+              <p>
+                Intenta seleccionar un período diferente o agregar nuevos
+                ingresos
+              </p>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Expenses by category</CardTitle>
+            <CardTitle>Gastos por categoría</CardTitle>
           </CardHeader>
           <CardContent className="flex h-[300px] items-center justify-center text-sm text-muted-foreground">
             <div className="text-center">
-              <p>No data for the selected period</p>
-              <p>Try selecting a different period or try adding new expenses</p>
+              <p>No hay datos para el período seleccionado</p>
+              <p>
+                Intenta seleccionar un período diferente o agregar nuevos gastos
+              </p>
             </div>
           </CardContent>
         </Card>
       </div>
-
       <div>
-        <h2 className="mb-4 text-2xl font-semibold">History</h2>
+        <h2 className="mb-4 text-2xl font-semibold">Historial</h2>
         <Card>
           <CardContent className="flex h-[300px] items-center justify-center text-sm text-muted-foreground">
             <div className="text-center">
-              <p>No data for the selected period</p>
-              <p>Try selecting a different period or adding new transactions</p>
+              <p>No hay datos para el período seleccionado</p>
+              <p>
+                Intenta seleccionar un período diferente o agregar nuevas
+                transacciones
+              </p>
             </div>
           </CardContent>
         </Card>
