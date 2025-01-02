@@ -1,6 +1,12 @@
-'use client';
-
-import { LayoutDashboard, Receipt, Settings } from 'lucide-react';
+import {
+  CreditCard,
+  LayoutDashboard,
+  LineChart,
+  PiggyBank,
+  Settings,
+  UserRound,
+  Wallet,
+} from 'lucide-react';
 import Link from 'next/link';
 
 import {
@@ -13,66 +19,66 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
-  useSidebar,
+  SidebarSeparator,
 } from '@/components/ui/sidebar';
-import { cn } from '@/lib/utils';
-
-import Logo from './logo';
-import { UserNav } from './user-nav';
 
 const SideBar = () => {
-  const { toggleSidebar } = useSidebar();
+  //const { toggleSidebar } = useSidebar();
 
-  const navItems = [
+  const menuItems = [
     {
-      title: 'Inicio',
-      href: '/dashboard',
+      title: 'Dashboard',
       icon: LayoutDashboard,
+      url: '/',
     },
     {
       title: 'Transacciones',
-      href: '/dashboard/transactions',
-      icon: Receipt,
+      icon: CreditCard,
+      url: '/transacciones',
     },
     {
-      title: 'Administración',
-      href: '/dashboard/manage',
+      title: 'Presupuestos',
+      icon: Wallet,
+      url: '/presupuestos',
+    },
+    {
+      title: 'Ahorros',
+      icon: PiggyBank,
+      url: '/ahorros',
+    },
+    {
+      title: 'Análisis',
+      icon: LineChart,
+      url: '/analisis',
+    },
+    {
+      title: 'Configuración',
       icon: Settings,
+      url: '/configuracion',
     },
   ];
 
   return (
-    <Sidebar collapsible="icon">
-      <div className="relative">
-        {' '}
-        <div className="absolute -right-8 top-5 z-50">
-          <SidebarTrigger onClick={toggleSidebar} className="shadow-md" />
-        </div>
-        <SidebarHeader className="p-3">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <div className="relative w-12 translate-y-[-2px]">
-                <Logo />
-              </div>
-            </div>
-          </div>
-        </SidebarHeader>
-      </div>
+    <Sidebar>
+      <SidebarHeader className="p-4">
+        <h2 className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-lg font-semibold text-transparent">
+          PxP Gestión Financiera
+        </h2>
+      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navItems.map(item => (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton asChild>
+              {menuItems.map(item => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton
+                    asChild
+                    tooltip={item.title}
+                    className="transition-colors duration-200"
+                  >
                     <Link
-                      href={item.href}
-                      className={cn(
-                        'w-full justify-start gap-2',
-                        'hover:bg-accent hover:text-accent-foreground',
-                        'transition-colors duration-200',
-                      )}
+                      href={item.url}
+                      className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
                     >
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
@@ -84,9 +90,19 @@ const SideBar = () => {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-
-      <SidebarFooter className="border-t">
-        <UserNav />
+      <SidebarFooter className="p-4">
+        <SidebarSeparator className="mb-4" />
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">
+            <UserRound className="h-5 w-5 text-primary" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-sm font-medium">Tomás Banchio</span>
+            <span className="text-xs text-muted-foreground">
+              tbanchio15@gmail.com
+            </span>
+          </div>
+        </div>
       </SidebarFooter>
     </Sidebar>
   );
