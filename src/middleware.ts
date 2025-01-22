@@ -9,6 +9,10 @@ const { auth } = NextAuth(authConfig);
 
 export default auth(request => {
   const { nextUrl } = request;
+  console.log('NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
+  console.log('Current URL:', nextUrl.origin);
+  console.log('Auth state:', request.auth);
+  // ... resto de tu códigoº
   // Verifica si el usuario está autenticado
   const isAuthenticated = !!request.auth;
   // Comprueba si la ruta actual es pública
