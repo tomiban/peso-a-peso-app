@@ -42,6 +42,7 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
         password: hashedPassword,
       },
     });
+
     await signIn('credentials', {
       email: data.email,
       password: data.password,
@@ -71,6 +72,10 @@ export async function login(values: z.infer<typeof LoginSchema>) {
     }
     return { error: 'error desconocido' };
   }
+}
+
+export async function googleLogin() {
+  await signIn('google');
 }
 
 export async function logout() {
