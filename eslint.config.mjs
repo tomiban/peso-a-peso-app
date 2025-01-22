@@ -30,6 +30,7 @@ const eslintConfig = [
       'simple-import-sort/imports': 'error',
       'unicorn/no-array-callback-reference': 'off',
       'unicorn/no-array-for-each': 'off',
+      'unicorn/no-null': 'off',
       'unicorn/no-array-reduce': 'off',
       'unicorn/prevent-abbreviations': [
         'error',
