@@ -1,7 +1,7 @@
 FROM node:20 AS base
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev --ignore-scripts --no-bin-links
+RUN npm ci --omit=dev --ignore-scripts --no-bin-links --legacy-peer-deps
 COPY . .
 RUN npm run build
 
