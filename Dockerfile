@@ -1,23 +1,9 @@
-# Usa Node.js 20 con Alpine Linux como base
 FROM node:20-alpine
-
-# Establece el directorio de trabajo
 WORKDIR /app
-
 COPY package.json package-lock.json ./
-
-npm i --legacy-peer-deps
-
+RUN npm install --production --legacy-peer-deps
 COPY . .
-
-# Copia todo el código fuente
-COPY . .
-
-# Define el puerto que usará la app
-EXPOSE 3000
-
-# Construye la aplicación Next.js
+ENV NODE_ENV=production
 RUN npm run build
-
-# Comando para iniciar la aplicación
+EXPOSE 3000
 CMD ["npm", "start"]
