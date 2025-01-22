@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 
 # Instala solo dependencias de producción
-RUN npm i --production
+RUN npm i 
 
 # Copia todo el código fuente
 COPY . .
