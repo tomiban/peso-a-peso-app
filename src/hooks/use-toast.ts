@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/numeric-separators-style */
 'use client';
 
 // Inspired by react-hot-toast library
