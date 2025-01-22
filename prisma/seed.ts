@@ -1,6 +1,6 @@
 import { TipoCategoria, TipoCuenta } from '@prisma/client';
 
-import prisma from '@/lib/prisma';
+import prisma from '@/lib/db';
 
 async function main() {
   // Limpiar la base de datos

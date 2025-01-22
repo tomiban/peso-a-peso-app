@@ -33,7 +33,7 @@ export const RegisterSchema = object({
   })
     .trim()
     .min(1, 'Contraseña requerida!')
-    .min(6, 'La contraseña debe tener al menos 6 caracteres!')
+    .min(8, 'La contraseña debe tener al menos 8 caracteres!')
     .max(50, 'La contraseña no puede tener más de 50 caracteres!'),
   confirmPassword: string({
     required_error: 'Confirmación de contraseña requerida!',

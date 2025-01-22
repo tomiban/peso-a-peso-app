@@ -15,16 +15,12 @@ export default auth(request => {
   const isPublicRoute = PUBLIC_ROUTES.includes(nextUrl.pathname);
 
   // Si el usuario está autenticado y trata de acceder a una ruta pública redirige al destino por defecto
-  if (isPublicRoute && isAuthenticated) {
+  if (isPublicRoute && isAuthenticated)
     return Response.redirect(new URL(DEFAULT_REDIRECT, nextUrl));
-  }
-
 
   // Si el usuario NO está autenticado y trata de acceder a una ruta protegida, redirige a la página de login
-  if (!isAuthenticated && !isPublicRoute) {
+  if (!isAuthenticated && !isPublicRoute)
     return Response.redirect(new URL(ROOT, nextUrl));
-  }
-
 });
 
 // Configuración del matcher para el middleware
