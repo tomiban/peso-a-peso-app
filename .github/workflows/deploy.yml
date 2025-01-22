@@ -23,9 +23,9 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t my-app:latest .
+          docker build -t peso-a-peso-app:latest .
 
       - name: Push Docker image
         run: |
-          docker tag my-app:latest ${{ secrets.DOCKER_USERNAME }}/my-app:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/my-app:latest
+          docker tag peso-a-peso-app:latest ${{ secrets.DOCKER_USERNAME }}/peso-a-peso-app:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/peso-a-peso-app:latest
