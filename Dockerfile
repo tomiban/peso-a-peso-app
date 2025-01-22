@@ -6,7 +6,7 @@ WORKDIR /app
 
 COPY package.json package-lock.json ./
 
-npm i --production --legacy-peer-deps
+npm i --legacy-peer-deps
 
 COPY . .
 
