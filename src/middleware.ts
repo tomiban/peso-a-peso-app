@@ -9,9 +9,12 @@ const { auth } = NextAuth(authConfig);
 
 export default auth(request => {
   const { nextUrl } = request;
-  console.log('NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
-  console.log('Current URL:', nextUrl.origin);
-  console.log('Auth state:', request.auth);
+  console.log('[AUTH-DEBUG] NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
+  console.log('[AUTH-DEBUG] Current URL:', nextUrl.origin);
+  console.log(
+    '[AUTH-DEBUG] Auth state:',
+    JSON.stringify(request.auth, null, 2),
+  );
   // ... resto de tu códigoº
   // Verifica si el usuario está autenticado
   const isAuthenticated = !!request.auth;
