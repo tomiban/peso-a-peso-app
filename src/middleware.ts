@@ -19,8 +19,10 @@ export default auth(request => {
     return Response.redirect(new URL(DEFAULT_REDIRECT, nextUrl));
 
   // Si el usuario NO está autenticado y trata de acceder a una ruta protegida, redirige a la página de login
-  if (!isAuthenticated && !isPublicRoute)
+  if (!isAuthenticated && !isPublicRoute) {
     return Response.redirect(new URL(ROOT, nextUrl));
+  }
+
 });
 
 // Configuración del matcher para el middleware
