@@ -4,11 +4,11 @@ FROM node:20-alpine
 # Establece el directorio de trabajo
 WORKDIR /app
 
-# Copia archivos de dependencias
 COPY package.json package-lock.json ./
 
-# Instala solo dependencias de producción
-RUN npm i 
+npm i --production --legacy-peer-deps
+
+COPY . .
 
 # Copia todo el código fuente
 COPY . .
