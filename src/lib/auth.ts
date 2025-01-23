@@ -8,12 +8,7 @@ import { LoginSchema } from '@/schema/auth';
 import { authConfig } from './auth.config';
 import database from './db';
 
-export const {
-  auth,
-  signIn,
-  signOut,
-  handlers: { GET, POST },
-} = NextAuth({
+export const { auth, signIn, signOut, handlers } = NextAuth({
   ...authConfig,
   providers: [
     Google,

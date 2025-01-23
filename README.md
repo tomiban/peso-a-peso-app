@@ -2,9 +2,7 @@
 
 ## 🌟 Descripcion del Proyecto
 
-P2P es una aplicacion de gestion financiera personal de vanguardia, desarrollada
-con tecnologias web modernas, enfocada en ofrecer una experiencia de usuario
-excepcional y un seguimiento financiero integral.
+P2P es una aplicacion de gestion financiera personal realizada cómo proyecto final para la academia crombie.
 
 ## 🚀 Caracteristicas Principales
 
@@ -57,17 +55,9 @@ excepcional y un seguimiento financiero integral.
 - Optimizacion para todas las pantallas
 - Navegacion intuitiva y eficiente
 
-## 🎯 Requerimientos Adicionales
+## 🎯 Requerimientos Adicionales Posibles
 
 ### Gestion Multi-Cuenta
-
-Sistema que soporta multiples cuentas por usuario con tipos de cuenta como:
-
-- Efectivo
-- Caja de ahorro
-- Cuenta en dolares
-- Cuentas de inversion (ej: FCI) Gestion independiente de cada cuenta con
-  balance individual
 
 ### Manejo de Monedas
 
@@ -82,8 +72,6 @@ Sistema que soporta multiples cuentas por usuario con tipos de cuenta como:
 - Soporte para principales plataformas como:
   - Mercado Pago
   - Ualá
-  - Brubank
-  - Cuenta Digital
 - Actualizacion en tiempo real de saldos
 - Registro detallado de movimientos de billeteras virtuales
 
