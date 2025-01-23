@@ -42,7 +42,7 @@ export default function RegisterForm() {
       if (response.error) {
         setError(response.error);
       } else if (response.success) {
-        router.push('/');
+        router.push('/wizard');
       }
     });
   }
