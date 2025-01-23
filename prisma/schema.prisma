@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,7 +8,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Enums existentes
 enum EstadoTransaccion {
   COMPLETADA
   PENDIENTE
@@ -26,73 +26,55 @@ enum EstadoPago {
   CANCELADO
 }
 
-enum TipoCuenta {
-  EFECTIVO
-  CUENTA_BANCO
-  TARJETA_CREDITO
-  AHORROS
-  INVERSION
+model UserSettings {
+  userId    String   @id @default(cuid())
+  currency  String   @db.VarChar(3)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-enum Frecuencia {
-  NINGUNA
-  DIARIA
-  SEMANAL
-  MENSUAL
-  ANUAL
-}
-
-// Usuario principal
 model User {
-  id                String          @id @default(cuid())
-  name              String?
-  email             String?         @unique
-  emailVerified     DateTime?
-  password          String?
-  image             String?
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-  currencyId        String?         // Moneda preferida del usuario
+  id            String           @id @default(cuid())
+  name          String?
+  email         String?          @unique
+  emailVerified DateTime?
+  password      String?
+  image         String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
 
-  // Relaciones de autenticación
-  accounts          AuthAccount[]
-  authenticators    Authenticator[]
-
-  // Relaciones financieras
-  financialAccounts FinancialAccount[] // Renombrado para evitar conflicto
-  categories        Category[]
-  savingsGoals      SavingsGoal[]
-  reminders         PaymentReminder[]
-  monthHistories    MonthHistory[]
-  yearHistories     YearHistory[]
-  currency          Currency?           @relation(fields: [currencyId], references: [id])
+  accounts       AuthAccount[]
+  authenticators Authenticator[]
+  settings       UserSettings?
+  categories     Category[]
+  transactions   Transaction[]
+  savingsGoals   SavingsGoal[]
+  reminders      PaymentReminder[]
+  budgets         Budget[]
+  monthHistories MonthHistory[]
+  yearHistories  YearHistory[]
 }
 
-// Modelo de cuenta de autenticación (AuthJS)
 model AuthAccount {
-  id                       String  @id @default(cuid())
-  userId                   String
-  type                     String
-  provider                 String
-  providerAccountId        String
-  refresh_token           String? @db.Text
-  access_token           String? @db.Text
-  expires_at              Int?
-  token_type              String?
-  scope                   String?
-  id_token               String? @db.Text
-  session_state          String?
-  refresh_token_expires_in Int?
+  id                        String  @id @default(cuid())
+  userId                    String
+  type                      String
+  provider                  String
+  providerAccountId         String
+  refresh_token             String? @db.Text
+  access_token              String? @db.Text
+  expires_at                Int?
+  token_type                String?
+  scope                     String?
+  id_token                  String? @db.Text
+  session_state             String?
+  refresh_token_expires_in  Int?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@index([userId])
-  @@map("accounts") // Mantiene el nombre de tabla original para AuthJS
+  @@map("accounts")
 }
-
-// Resto de modelos de autenticación
-
 
 model VerificationToken {
   identifier String
@@ -103,96 +85,56 @@ model VerificationToken {
 }
 
 model Authenticator {
-  credentialID         String  @unique
-  userId               String
-  providerAccountId    String
-  credentialPublicKey  String
-  counter              Int
-  credentialDeviceType String
-  credentialBackedUp   Boolean
-  transports          String?
+  credentialID          String  @unique
+  userId                String
+  providerAccountId     String
+  credentialPublicKey   String
+  counter               Int
+  credentialDeviceType  String
+  credentialBackedUp    Boolean
+  transports           String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, credentialID])
 }
 
-// Modelos financieros
-model Currency {
-  id           String             @id @default(uuid())
-  code         String             @unique
-  name         String
-  symbol       String
-  users        User[]
-  accounts     FinancialAccount[]
-}
-
-model FinancialAccount {
-  id             String        @id @default(uuid())
-  userId         String
-  name           String
-  type           TipoCuenta
-  currencyId     String
-  currentBalance Decimal       @default(0)
-  isActive       Boolean       @default(true)
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-
-  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  currency       Currency      @relation(fields: [currencyId], references: [id])
-  transactions   Transaction[]
-  transfersFrom  Transfer[]    @relation("FromAccount")
-  transfersTo    Transfer[]    @relation("ToAccount")
-
-  @@unique([userId, name])
-}
-
 model Category {
-  id           String         @id @default(uuid())
-  name         String
-  userId       String
-  type         TipoCategoria?
-  icon         String?
-  color        String?
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  id          String         @id @default(uuid())
+  name        String
+  userId      String
+  type        TipoCategoria?
+  icon        String?
+  color       String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
 
-  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions Transaction[]
+  reminders    PaymentReminder[]
+  budgets    Budget[]
 
   @@unique([name, userId, type])
+  @@index([userId])
 }
 
 model Transaction {
-  id                String            @id @default(uuid())
-  accountId         String
-  categoryId        String
-  amount           Decimal
-  status           EstadoTransaccion @default(COMPLETADA)
-  date             DateTime
-  notes            String?
-  attachments      String?
-  frequency        Frecuencia?
-  nextExecutionDate DateTime?
-  endRecurrencyDate DateTime?
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
+  id          String            @id @default(uuid())
+  userId      String
+  categoryId  String
+  amount      Float
+  status      EstadoTransaccion @default(COMPLETADA)
+  date        DateTime
+  notes       String?
+  attachments String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
 
-  account          FinancialAccount  @relation(fields: [accountId], references: [id])
-  category         Category          @relation(fields: [categoryId], references: [id])
-}
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category    Category          @relation(fields: [categoryId], references: [id])
 
-model Transfer {
-  id           String           @id @default(uuid())
-  fromAccountId String
-  toAccountId   String
-  amount       Decimal
-  date         DateTime
-  notes        String?
-  createdAt    DateTime         @default(now())
-
-  fromAccount  FinancialAccount @relation("FromAccount", fields: [fromAccountId], references: [id])
-  toAccount    FinancialAccount @relation("ToAccount", fields: [toAccountId], references: [id])
+  @@index([userId])
+  @@index([categoryId])
 }
 
 model SavingsGoal {
@@ -206,19 +148,43 @@ model SavingsGoal {
   updatedAt     DateTime  @updatedAt
 
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
 }
 
 model PaymentReminder {
   id         String     @id @default(uuid())
   userId     String
+  categoryId String?
   title      String
   amount     Decimal
   dueDate    DateTime
-  frequency  Frecuencia @default(NINGUNA)
   status     EstadoPago @default(PENDIENTE)
-  categoryId String?
 
   user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category   Category?  @relation(fields: [categoryId], references: [id])
+
+  @@index([userId])
+  @@index([categoryId])
+}
+
+model Budget {
+  id          String    @id @default(uuid())
+  userId      String
+  categoryId  String
+  amount      Decimal   @db.Decimal(15,2)
+  period      String    // 'monthly', 'yearly'
+  startDate   DateTime  @default(now())
+  endDate     DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category    Category  @relation(fields: [categoryId], references: [id])
+
+  @@index([userId])
+  @@index([categoryId])
+  @@unique([userId, categoryId, period])
 }
 
 model MonthHistory {
@@ -231,6 +197,8 @@ model MonthHistory {
   expense Decimal  @db.Decimal(15,2)
 
   user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, year, month, day])
 }
 
 model YearHistory {
@@ -242,4 +210,6 @@ model YearHistory {
   expense Decimal  @db.Decimal(15,2)
 
   user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, year, month])
 }
