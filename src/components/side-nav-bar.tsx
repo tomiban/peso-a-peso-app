@@ -5,12 +5,14 @@ import {
   CreditCard,
   LayoutDashboard,
   LineChart,
+  type LucideIcon,
   PiggyBank,
   Settings,
   UserRound,
   Wallet,
 } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 import {
   Sidebar,
@@ -20,14 +22,13 @@ import {
   SidebarGroupContent,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
   SidebarSeparator,
   useSidebar,
 } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 
 import Logo from './logo';
+import { buttonVariants } from './ui/button';
 
 const SideBar = () => {
   const { open, toggleSidebar } = useSidebar();
@@ -66,25 +67,13 @@ const SideBar = () => {
           <SidebarGroup>
             <SidebarGroupContent>
               <SidebarMenu>
-                {menuItems.map(item => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      tooltip={item.title}
-                      className="transition-colors duration-200"
-                    >
-                      <Link
-                        href={item.url}
-                        className="flex h-[2.7rem] items-center gap-2 text-muted-foreground hover:text-foreground"
-                      >
-                        <item.icon className="h-4 w-4" />
-                        <span className={cn(!open && 'hidden')}>
-                          {item.title}
-                        </span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
+                {menuItems.map(item =>
+                  SideBarItem({
+                    link: item.url,
+                    icon: item.icon,
+                    label: item.title,
+                  }),
+                )}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -108,5 +97,33 @@ const SideBar = () => {
     </div>
   );
 };
+
+function SideBarItem({
+  link,
+  icon: Icon,
+  label,
+}: {
+  link: string;
+  icon: LucideIcon;
+  label: string;
+}) {
+  const pathname = usePathname();
+  const isActive = pathname === link;
+  return (
+    <div className="relative flex items-center">
+      <Link
+        href={link}
+        className={cn(
+          buttonVariants({ variant: 'ghost' }),
+          'w-full justify-start text-base text-muted-foreground hover:text-foreground',
+          isActive && 'text-foreground',
+        )}
+      >
+        <Icon className="h-4 w-4" />
+        {label}
+      </Link>
+    </div>
+  );
+}
 
 export default SideBar;
