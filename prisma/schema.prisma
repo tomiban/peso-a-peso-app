@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,68 +7,48 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum EstadoTransaccion {
-  COMPLETADA
-  PENDIENTE
-  CANCELADA
-}
-
-enum TipoCategoria {
-  GASTO
-  INGRESO
-}
-
-enum EstadoPago {
-  PENDIENTE
-  PAGADO
-  VENCIDO
-  CANCELADO
-}
-
 model UserSettings {
-  userId    String   @id @default(cuid())
-  currency  String   @db.VarChar(3)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   String @id 
+  currency String @db.VarChar(3)
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model User {
-  id            String           @id @default(cuid())
-  name          String?
-  email         String?          @unique
-  emailVerified DateTime?
-  password      String?
-  image         String?
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
-
-  accounts       AuthAccount[]
+  id             String            @id @default(cuid())
+  email          String?           @unique
+  name           String?
+  image          String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  password       String?
+  emailVerified  DateTime?
   authenticators Authenticator[]
-  settings       UserSettings?
+  budgets        Budget[]
   categories     Category[]
-  transactions   Transaction[]
-  savingsGoals   SavingsGoal[]
-  reminders      PaymentReminder[]
-  budgets         Budget[]
   monthHistories MonthHistory[]
+  reminders      PaymentReminder[]
+  savingsGoals   SavingsGoal[]
+  transactions   Transaction[]
+  settings       UserSettings?
   yearHistories  YearHistory[]
+  accounts       AuthAccount[]
 }
 
 model AuthAccount {
-  id                        String  @id @default(cuid())
-  userId                    String
-  type                      String
-  provider                  String
-  providerAccountId         String
-  refresh_token             String? @db.Text
-  access_token              String? @db.Text
-  expires_at                Int?
-  token_type                String?
-  scope                     String?
-  id_token                  String? @db.Text
-  session_state             String?
-  refresh_token_expires_in  Int?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                       String  @id @default(cuid())
+  userId                   String
+  type                     String
+  provider                 String
+  providerAccountId        String
+  refresh_token            String? @db.Text
+  access_token             String? @db.Text
+  expires_at               Int?
+  token_type               String?
+  scope                    String?
+  id_token                 String? @db.Text
+  session_state            String?
+  refresh_token_expires_in Int?
+  user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@index([userId])
@@ -85,34 +64,32 @@ model VerificationToken {
 }
 
 model Authenticator {
-  credentialID          String  @unique
-  userId                String
-  providerAccountId     String
-  credentialPublicKey   String
-  counter               Int
-  credentialDeviceType  String
-  credentialBackedUp    Boolean
+  credentialID         String  @unique
+  userId               String
+  providerAccountId    String
+  credentialPublicKey  String
+  counter              Int
+  credentialDeviceType String
+  credentialBackedUp   Boolean
   transports           String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                 User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, credentialID])
 }
 
 model Category {
-  id          String         @id @default(uuid())
-  name        String
-  userId      String
-  type        TipoCategoria?
-  icon        String?
-  color       String?
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  transactions Transaction[]
+  createdAt    DateTime          @default(now())
+  name         String
+  userId       String
+  type         TransactionType?   @default(INCOME)
+  icon         String?
+  color        String?
+  id           String            @id @default(uuid())
+  updatedAt    DateTime          @updatedAt
+  budgets      Budget[]
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   reminders    PaymentReminder[]
-  budgets    Budget[]
+  transactions Transaction[]
 
   @@unique([name, userId, type])
   @@index([userId])
@@ -120,18 +97,18 @@ model Category {
 
 model Transaction {
   id          String            @id @default(uuid())
-  userId      String
-  categoryId  String
-  amount      Float
-  status      EstadoTransaccion @default(COMPLETADA)
-  date        DateTime
-  notes       String?
-  attachments String?
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
-
-  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount      Float
+  date        DateTime
+  type        TransactionType?   @default(INCOME)
+  attachments String?
+  categoryId  String
+  notes       String?
+  status      EstadoTransaccion @default(COMPLETADA)
+  userId      String
   category    Category          @relation(fields: [categoryId], references: [id])
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([categoryId])
@@ -142,74 +119,88 @@ model SavingsGoal {
   userId        String
   name          String
   targetAmount  Decimal
-  currentAmount Decimal   @default(0)
+  currentAmount Decimal   @default(0.000000000000000000000000000000)
   deadline      DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   @@index([userId])
 }
 
 model PaymentReminder {
   id         String     @id @default(uuid())
   userId     String
-  categoryId String?
   title      String
   amount     Decimal
   dueDate    DateTime
   status     EstadoPago @default(PENDIENTE)
-
-  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId String?
   category   Category?  @relation(fields: [categoryId], references: [id])
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([categoryId])
 }
 
 model Budget {
-  id          String    @id @default(uuid())
-  userId      String
-  categoryId  String
-  amount      Decimal   @db.Decimal(15,2)
-  period      String    // 'monthly', 'yearly'
-  startDate   DateTime  @default(now())
-  endDate     DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id         String    @id @default(uuid())
+  userId     String
+  categoryId String
+  amount     Decimal   @db.Decimal(15, 2)
+  period     String
+  startDate  DateTime  @default(now())
+  endDate    DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  category   Category  @relation(fields: [categoryId], references: [id])
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  category    Category  @relation(fields: [categoryId], references: [id])
-
+  @@unique([userId, categoryId, period])
   @@index([userId])
   @@index([categoryId])
-  @@unique([userId, categoryId, period])
 }
 
 model MonthHistory {
-  id      Int      @id @default(autoincrement())
   userId  String
   day     Int
   month   Int
   year    Int
-  income  Decimal  @db.Decimal(15,2)
-  expense Decimal  @db.Decimal(15,2)
-
-  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  income  Decimal @db.Decimal(15, 2)
+  expense Decimal @db.Decimal(15, 2)
+  id      Int     @id @default(autoincrement())
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, year, month, day])
 }
 
 model YearHistory {
-  id      Int      @id @default(autoincrement())
   userId  String
   month   Int
   year    Int
-  income  Decimal  @db.Decimal(15,2)
-  expense Decimal  @db.Decimal(15,2)
-
-  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  income  Decimal @db.Decimal(15, 2)
+  expense Decimal @db.Decimal(15, 2)
+  id      Int     @id @default(autoincrement())
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, year, month])
+}
+
+enum EstadoTransaccion {
+  COMPLETADA
+  PENDIENTE
+  CANCELADA
+}
+
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum EstadoPago {
+  PENDIENTE
+  PAGADO
+  VENCIDO
+  CANCELADO
 }
