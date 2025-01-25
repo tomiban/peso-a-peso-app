@@ -38,7 +38,7 @@ import {
   SidebarSeparator,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { signOut } from '@/lib/auth';
+import { logout } from '@/lib/actions';
 import { cn } from '@/lib/utils';
 
 import Logo from './logo';
@@ -131,7 +131,13 @@ const SideBar = () => {
                   >
                     <DropdownMenuItem
                       className="cursor-pointer"
-                      onClick={() => signOut()}
+                      onClick={async () => {
+                        try {
+                          await logout();
+                        } catch (error) {
+                          console.error('Error al cerrar sesión:', error);
+                        }
+                      }}
                     >
                       <LogOut className="mr-2 h-4 w-4" />
                       <span>Cerrar sesión</span>

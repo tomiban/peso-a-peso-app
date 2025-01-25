@@ -19,34 +19,35 @@ export const authConfig = {
       return isAuthenticated;
     },
     async signIn({ user, account }) {
-      try {
-        if (account?.provider === 'google') {
-          console.log(user);
-          await database.user.upsert({
-            where: { email: user.email! },
-            update: {},
-            create: {
-              email: user.email,
-              name: user.name,
-              image: user.image,
-              id: user.id,
+      if (account?.provider === 'google') {
+        const existingUser = await database.user.findUnique({
+          where: { email: user.email! },
+        });
+
+        if (!existingUser) {
+          await database.user.create({
+            data: {
+              email: user.email!,
+              name: user.name || '',
+              image: user.image || '',
             },
           });
         }
-        return true;
-      } catch (error) {
-        console.error('SignIn error:', error);
-        return false;
       }
+
+      return true;
     },
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
+        const databaseUser = await database.user.findUnique({
+          where: { email: token.email! },
+        });
+
+        if (databaseUser) {
+          token.id = databaseUser.id;
+        }
       }
-      // Si no hay user, usar sub como id
-      if (!token.id && token.sub) {
-        token.id = token.sub;
-      }
+
       return token;
     },
     session({ session, token }) {
