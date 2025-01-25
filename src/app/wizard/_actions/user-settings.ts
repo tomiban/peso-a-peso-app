@@ -20,7 +20,18 @@ export async function UpdateUserCurrency(currency: string) {
   }
 
   return prisma.userSettings.update({
-    where: { userId: session.user.id },
+    where: { userId: session?.user?.id },
     data: { currency: parsedBody.data.currency },
+  });
+}
+
+export async function GetUserSettings() {
+  const session = await auth();
+
+  if (!session?.user) {
+    redirect('/login');
+  }
+  return prisma.userSettings.findUnique({
+    where: { userId: session?.user?.id },
   });
 }

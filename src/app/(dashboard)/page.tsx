@@ -1,4 +1,8 @@
 import { DollarSign, TrendingDown, TrendingUp, Wallet } from 'lucide-react';
+import { redirect } from 'next/navigation';
+
+import { auth } from '@/lib/auth';
+import db from '@/lib/db';
 
 import { ActionButtons } from './_components/action-buttons';
 import { ExpenseChart } from './_components/expense-chart';
@@ -7,7 +11,16 @@ import { RecentTransactions } from './_components/recent-transaction';
 import { SavingsGoal } from './_components/saving-goals';
 import { StatCard } from './_components/stat-card';
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const session = await auth();
+  const userSettings = await db.userSettings.findUnique({
+    where: { userId: session?.user?.id },
+  });
+
+  if (!userSettings) {
+    redirect('/wizard');
+  }
+
   return (
     <div className="space-y-6 py-8 sm:space-y-8">
       <div>

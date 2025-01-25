@@ -1,5 +1,7 @@
-import { ReactNode } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { ReactNode, useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -21,53 +23,85 @@ import {
 import { Input } from '@/components/ui/input';
 import { TransactionType } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { CreateTransactionSchemaType } from '@/schema/transaction';
+import {
+  CreateTransactionSchema,
+  CreateTransactionSchemaType,
+} from '@/schema/transaction';
 
+import { createTransaction } from '../_actions/transaction';
 import { CategoryPicker } from './category-picker';
 
 interface Props {
   trigger: ReactNode;
   type: TransactionType;
-  onSubmit?: (data: CreateTransactionSchemaType) => void;
 }
 
-export function TransactionDialog({ trigger, type, onSubmit }: Props) {
+export function TransactionDialog({ trigger, type }: Props) {
+  const [open, setOpen] = useState(false);
   const form = useForm<CreateTransactionSchemaType>({
+    resolver: zodResolver(CreateTransactionSchema),
     defaultValues: {
       type,
-      date: new Date(),
       amount: 0,
-      description: '',
+      date: new Date(),
     },
   });
 
-  const handleSubmit = form.handleSubmit(data => {
-    onSubmit?.(data);
-  });
+  const onSubmit = useCallback(
+    async (data: CreateTransactionSchemaType) => {
+      const toastId = toast.loading('Creando transacción...');
+      try {
+        // TODO: Implementar server action para crear transacción
+        console.log(data);
+        const result = await createTransaction(data);
+        if (result) {
+          toast.success('Transacción creada exitosamente', {
+            id: toastId,
+          });
+          form.reset();
+          setOpen(false);
+        }
+      } catch (error) {
+        console.error('Error al crear transacción:', error);
+        toast.error('Error al crear la transacción', {
+          id: toastId,
+        });
+      }
+    },
+    [form, setOpen],
+  );
 
   return (
-    <Dialog>
+    <Dialog
+      open={open}
+      onOpenChange={open => {
+        setOpen(open);
+        if (!open) {
+          form.reset();
+        }
+      }}
+    >
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="sm:max-w-md md:max-w-lg">
-        <DialogHeader className="space-y-3">
-          <DialogTitle className="text-center">
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>
             Nueva transacción de
             <span
               className={cn(
                 'mx-2 font-medium',
-                type === 'INGRESO' ? 'text-green-500' : 'text-red-500',
+                type === 'INCOME' ? 'text-green-500' : 'text-red-500',
               )}
             >
-              {type === 'INGRESO' ? 'Ingreso' : 'Egreso'}
+              {type === 'INCOME' ? 'Ingreso' : 'Egreso'}
             </span>
           </DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={form.control}
-              name="description"
+              name="note"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Descripción (opcional)</FormLabel>
@@ -101,7 +135,6 @@ export function TransactionDialog({ trigger, type, onSubmit }: Props) {
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
               name="date"
@@ -113,7 +146,18 @@ export function TransactionDialog({ trigger, type, onSubmit }: Props) {
                       type="datetime-local"
                       className="h-10"
                       {...field}
-                      value={field.value.toISOString().slice(0, 16)}
+                      value={
+                        field.value instanceof Date
+                          ? field.value.toISOString().slice(0, 16)
+                          : ''
+                      }
+                      onChange={data => {
+                        field.onChange(
+                          data.target.value
+                            ? new Date(data.target.value)
+                            : new Date(),
+                        );
+                      }}
                     />
                   </FormControl>
                   <FormMessage />
@@ -123,12 +167,15 @@ export function TransactionDialog({ trigger, type, onSubmit }: Props) {
 
             <FormField
               control={form.control}
-              name="category"
+              name="categoryId"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Categoría</FormLabel>
                   <FormControl>
-                    <CategoryPicker type={type} onChange={field.onChange} />
+                    <CategoryPicker
+                      type={type}
+                      onChange={category => field.onChange(category?.id)}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -137,12 +184,16 @@ export function TransactionDialog({ trigger, type, onSubmit }: Props) {
 
             <DialogFooter>
               <Button
+                type="button"
                 variant="secondary"
-                type="submit"
-                className={cn('w-full text-white')}
+                onClick={() => {
+                  setOpen(false);
+                  form.reset();
+                }}
               >
-                Guardar {type === 'INGRESO' ? 'Ingreso' : 'Egreso'}
+                Cancelar
               </Button>
+              <Button type="submit">Guardar</Button>
             </DialogFooter>
           </form>
         </Form>
