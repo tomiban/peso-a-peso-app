@@ -7,49 +7,44 @@ import prisma from '@/lib/prisma';
 export async function GET(_: NextRequest) {
   try {
     const session = await auth();
-    if (!session?.user?.id) {
+    console.log('Session state:', { session, userId: session?.user?.id });
+
+    if (!session || !session.user || !session.user.id) {
       return NextResponse.json(
-        { success: false, message: 'Unauthorized' },
+        { success: false, message: 'No session found' },
         { status: 401 },
       );
     }
 
-    let userSettings = await prisma.userSettings.findUnique({
+    const userSettings = await prisma.userSettings.upsert({
       where: { userId: session.user.id },
+      update: {},
+      create: {
+        userId: session.user.id,
+        currency: 'ARS',
+      },
     });
 
-    if (!userSettings) {
-      userSettings = await prisma.userSettings.create({
-        data: {
-          userId: session.user.id,
-          currency: 'ARS',
-        },
-      });
-    }
+    console.log('userSettings:', userSettings);
 
-    console.log(userSettings);
-
-    return NextResponse.json(
-      {
+    return new NextResponse(
+      JSON.stringify({
         success: true,
-        data: userSettings,
-      },
+        data: {
+          currency: userSettings.currency,
+          userId: userSettings.userId,
+        },
+      }),
       {
         status: 200,
-        statusText: 'OK',
+        headers: { 'Content-Type': 'application/json' },
       },
     );
   } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        message:
-          error instanceof Error ? error.message : 'Failed to fetch settings',
-      },
-      {
-        status: 500,
-        statusText: 'Internal Server Error',
-      },
+    console.error('Error:', error);
+    return new NextResponse(
+      JSON.stringify({ success: false, message: 'Server error' }),
+      { status: 500 },
     );
   }
 }
