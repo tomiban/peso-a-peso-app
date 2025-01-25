@@ -28,7 +28,7 @@ export const ActionButtons = () => {
             Nuevo Ingreso
           </Button>
         }
-        type="INGRESO"
+        type="INCOME"
       />
 
       <TransactionDialog
@@ -42,7 +42,7 @@ export const ActionButtons = () => {
             Nuevo Gasto
           </Button>
         }
-        type="GASTO"
+        type="EXPENSE"
       />
     </div>
   );

@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE `Category` MODIFY `type` ENUM('INCOME', 'EXPENSE') NULL DEFAULT 'INCOME';
+
+-- AlterTable
+ALTER TABLE `Transaction` MODIFY `type` ENUM('INCOME', 'EXPENSE') NULL DEFAULT 'INCOME';
