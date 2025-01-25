@@ -50,6 +50,7 @@ interface Props {
 
 export function CreateCategoryDialog({ type, onCreated, onSuccess }: Props) {
   const [open, setOpen] = useState(false);
+  const [emojiOpen, setEmojiOpen] = useState(false);
 
   const form = useForm<CreateCategorySchemaType>({
     resolver: zodResolver(CreateCategorySchema),
@@ -69,7 +70,6 @@ export function CreateCategoryDialog({ type, onCreated, onSuccess }: Props) {
             id: toastId,
           });
           form.reset();
-          setOpen(false);
           // Llamamos a onSuccess (selecciona la nueva categoría)
           onSuccess?.(result);
 
@@ -81,6 +81,8 @@ export function CreateCategoryDialog({ type, onCreated, onSuccess }: Props) {
         toast.error('Error al crear la categoría', {
           id: toastId,
         });
+      } finally {
+        setOpen(false);
       }
     },
     [setOpen, form, onSuccess, onCreated],
@@ -148,7 +150,7 @@ export function CreateCategoryDialog({ type, onCreated, onSuccess }: Props) {
                 <FormItem>
                   <FormLabel>Ícono</FormLabel>
                   <FormControl>
-                    <Popover>
+                    <Popover open={emojiOpen} onOpenChange={setEmojiOpen}>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
@@ -183,6 +185,7 @@ export function CreateCategoryDialog({ type, onCreated, onSuccess }: Props) {
                           data={data}
                           onEmojiSelect={(emoji: { native: string }) => {
                             field.onChange(emoji.native);
+                            setEmojiOpen(false);
                           }}
                         />
                       </PopoverContent>
