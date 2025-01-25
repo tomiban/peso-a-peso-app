@@ -99,12 +99,12 @@ model Transaction {
   id          String            @id @default(uuid())
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
-  amount      Float
+  amount      Decimal           @db.Decimal(15, 2) 
   date        DateTime
   type        TransactionType?   @default(INCOME)
   attachments String?
   categoryId  String
-  notes       String?
+  note         String?
   status      EstadoTransaccion @default(COMPLETADA)
   userId      String
   category    Category          @relation(fields: [categoryId], references: [id])
@@ -119,7 +119,7 @@ model SavingsGoal {
   userId        String
   name          String
   targetAmount  Decimal
-  currentAmount Decimal   @default(0.000000000000000000000000000000)
+  currentAmount Decimal   @default(0.00)
   deadline      DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -147,7 +147,7 @@ model Budget {
   id         String    @id @default(uuid())
   userId     String
   categoryId String
-  amount     Decimal   @db.Decimal(15, 2)
+  amount     Decimal   @db.Decimal(15, 2) 
   period     String
   startDate  DateTime  @default(now())
   endDate    DateTime?
