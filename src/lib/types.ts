@@ -1,1 +1,1 @@
-export type TransactionType = 'INGRESO' | 'GASTO';
+export type TransactionType = 'INCOME' | 'EXPENSE';
