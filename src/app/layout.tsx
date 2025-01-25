@@ -2,6 +2,7 @@ import './globals.css';
 
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
+import { SessionProvider } from 'next-auth/react';
 
 import RootProviders from '@/components/providers/root-providers';
 import { Toaster } from '@/components/ui/sonner';
@@ -32,7 +33,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Toaster richColors position="bottom-right" />
-        <RootProviders>{children}</RootProviders>
+        <SessionProvider>
+          <RootProviders>{children}</RootProviders>
+        </SessionProvider>
       </body>
     </html>
   );
