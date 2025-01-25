@@ -79,10 +79,10 @@ export function CreateCategoryDialog({ type, onSuccess }: Props) {
             <span
               className={cn(
                 'mx-2 font-medium',
-                type === 'INGRESO' ? 'text-green-500' : 'text-red-500',
+                type === 'INCOME' ? 'text-green-500' : 'text-red-500',
               )}
             >
-              {type === 'INGRESO' ? 'Ingreso' : 'Egreso'}
+              {type === 'INCOME' ? 'Ingreso' : 'Egreso'}
             </span>
           </DialogTitle>
         </DialogHeader>
@@ -173,7 +173,7 @@ export function CreateCategoryDialog({ type, onSuccess }: Props) {
               <Button
                 type="submit"
                 className={cn(
-                  type === 'INGRESO'
+                  type === 'INCOME'
                     ? 'bg-green-500 hover:bg-green-600'
                     : 'bg-red-500 hover:bg-red-600',
                 )}
