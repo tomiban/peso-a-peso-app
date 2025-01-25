@@ -1,72 +1,67 @@
 import { Category } from '@prisma/client';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { TransactionType } from '@/lib/types';
 
-interface CreateCategoryData {
-  name: string;
-  icon: string;
-  type: TransactionType;
+// Nueva interfaz para la respuesta de la API
+interface ApiResponse {
+  success: boolean;
+  status: number;
+  data: Category[];
 }
-export function useCategories(initialCategories: Category[] = []) {
-  const [categories, setCategories] = useState<Category[]>(initialCategories);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const createCategory = async (data: CreateCategoryData) => {
-    setIsLoading(true);
-    setError(null);
+// Estado global para manejar las categorías
+interface CategoryState {
+  categories: Category[]; // Lista de categorías
+  isLoading: boolean; // Indicador de carga
+  error: string | null; // Manejo de errores
+}
 
+export function useCategories() {
+  // Inicialización del estado
+  const [state, setState] = useState<CategoryState>({
+    categories: [],
+    isLoading: false,
+    error: null,
+  });
+
+  // Función actualizada para obtener categorías filtradas por tipo
+  const fetchCategories = useCallback(async (type: TransactionType) => {
+    setState(previous => ({ ...previous, isLoading: true }));
     try {
-      const response = await fetch('/api/categories', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
+      const response = await fetch(`/api/categories?type=${type}`);
 
       if (!response.ok) {
-        throw new Error('Failed to create category');
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: 'No error details available' }));
+        throw new Error(
+          `Error fetching categories: [${response.status}] ${response.statusText}${
+            errorData.message ? `: ${errorData.message}` : ''
+          }`,
+        );
       }
-      const newCategory = await response.json();
-      setCategories(previous => [...previous, newCategory]);
-      return newCategory;
-    } catch (error_) {
-      setError(error_ instanceof Error ? error_.message : 'Error desconocido');
-      return null;
-    } finally {
-      setIsLoading(false);
+
+      const apiResponse = (await response.json()) as ApiResponse;
+
+      // Actualizar estado con las categorías obtenidas de data
+      setState(previous => ({
+        ...previous,
+        categories: apiResponse.data,
+        isLoading: false,
+        error: null,
+      }));
+    } catch (error) {
+      // Manejar errores actualizando el estado
+      setState(previous => ({
+        ...previous,
+        error:
+          error instanceof Error ? error.message : 'Error fetching categories',
+        isLoading: false,
+      }));
     }
-  };
+  }, []);
 
-  const fetchCategories = async (type?: string) => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch(
-        '/api/categories' + (type ? `?type=${type}` : ''),
-      );
-      if (!response.ok) {
-        throw new Error('Error al obtener las categorías');
-      }
-      const data = await response.json();
-      setCategories(data);
-      return data;
-    } catch (error_) {
-      setError(error_ instanceof Error ? error_.message : 'Error desconocido');
-      return [];
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return {
-    categories,
-    isLoading,
-    error,
-    createCategory,
-    fetchCategories,
-  };
+  // Retornar estado y funciones
+  return { ...state, fetchCategories };
 }

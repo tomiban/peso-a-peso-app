@@ -3,9 +3,12 @@
 import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Category } from '@prisma/client';
+import { DialogDescription } from '@radix-ui/react-dialog';
 import { CircleOff, PlusCircle } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -37,27 +40,53 @@ import {
   CreateCategorySchemaType,
 } from '@/schema/category';
 
+import { createCategory } from '../_actions/categories';
+
 interface Props {
   type: TransactionType;
-  onSuccess?: (data: CreateCategorySchemaType) => void;
+  onSuccess?: (category: Category) => void;
+  onCreated?: () => void; // Nueva prop para refrescar las categorías
 }
 
-export function CreateCategoryDialog({ type, onSuccess }: Props) {
+export function CreateCategoryDialog({ type, onCreated, onSuccess }: Props) {
   const [open, setOpen] = useState(false);
+  const [emojiOpen, setEmojiOpen] = useState(false);
 
   const form = useForm<CreateCategorySchemaType>({
     resolver: zodResolver(CreateCategorySchema),
     defaultValues: {
-      name: '',
-      icon: '',
+      type,
     },
   });
 
-  const onSubmit = (data: CreateCategorySchemaType) => {
-    onSuccess?.(data);
-    setOpen(false);
-    form.reset();
-  };
+  const onSubmit = useCallback(
+    async (data: CreateCategorySchemaType) => {
+      const toastId = toast.loading('Creando categoría...');
+      try {
+        // 1. Llamamos a la server action para crear la categoría
+        const result = await createCategory(data);
+        if (result) {
+          toast.success(`Categoría ${result.name} creada exitosamente`, {
+            id: toastId,
+          });
+          form.reset();
+          // Llamamos a onSuccess (selecciona la nueva categoría)
+          onSuccess?.(result);
+
+          // Llamamos a onCreated (refresca la lista de categorías)
+          onCreated?.();
+        }
+      } catch (error) {
+        console.error('Error al crear categoría:', error);
+        toast.error('Error al crear la categoría', {
+          id: toastId,
+        });
+      } finally {
+        setOpen(false);
+      }
+    },
+    [setOpen, form, onSuccess, onCreated],
+  );
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -72,23 +101,30 @@ export function CreateCategoryDialog({ type, onSuccess }: Props) {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-md">
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle className="text-center">
+          <DialogTitle>
             Nueva categoría de
             <span
               className={cn(
-                'mx-2 font-medium',
+                'm-1',
                 type === 'INCOME' ? 'text-green-500' : 'text-red-500',
               )}
             >
               {type === 'INCOME' ? 'Ingreso' : 'Egreso'}
             </span>
           </DialogTitle>
+          <DialogDescription>
+            Las caregorias son utilizadas para agrupar tus transacciones
+          </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form
+            // eslint-disable-next-line unicorn/prevent-abbreviations
+            onSubmit={form.handleSubmit(onSubmit, e => console.log(e))}
+            className="space-y-6"
+          >
             <FormField
               control={form.control}
               name="name"
@@ -114,7 +150,7 @@ export function CreateCategoryDialog({ type, onSuccess }: Props) {
                 <FormItem>
                   <FormLabel>Ícono</FormLabel>
                   <FormControl>
-                    <Popover>
+                    <Popover open={emojiOpen} onOpenChange={setEmojiOpen}>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
@@ -149,6 +185,7 @@ export function CreateCategoryDialog({ type, onSuccess }: Props) {
                           data={data}
                           onEmojiSelect={(emoji: { native: string }) => {
                             field.onChange(emoji.native);
+                            setEmojiOpen(false);
                           }}
                         />
                       </PopoverContent>
@@ -170,15 +207,8 @@ export function CreateCategoryDialog({ type, onSuccess }: Props) {
               >
                 Cancelar
               </Button>
-              <Button
-                type="submit"
-                className={cn(
-                  type === 'INCOME'
-                    ? 'bg-green-500 hover:bg-green-600'
-                    : 'bg-red-500 hover:bg-red-600',
-                )}
-              >
-                Crear categoría
+              <Button type="submit" variant="outline">
+                Crear
               </Button>
             </DialogFooter>
           </form>
