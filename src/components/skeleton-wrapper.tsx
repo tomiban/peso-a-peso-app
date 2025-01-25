@@ -9,10 +9,12 @@ export default function SkeletonWrapper({
   children, // Contenido a mostrar
   isLoading, // Si está cargando
   fullWidth = true, // Si ocupa todo el ancho disponible
+  className,
 }: {
   children: ReactNode;
   isLoading: boolean;
   fullWidth?: boolean;
+  className?: string;
 }) {
   // Si no está cargando, muestra el contenido normal
   if (!isLoading) {
@@ -21,7 +23,13 @@ export default function SkeletonWrapper({
 
   // Si está cargando, muestra un esqueleto del mismo tamaño
   return (
-    <Skeleton className={cn(fullWidth && 'w-full')}>
+    <Skeleton
+      className={cn(
+        'animate-pulse bg-muted/50',
+        fullWidth && 'w-full',
+        className,
+      )}
+    >
       <div className="opacity-0">{children}</div>
     </Skeleton>
   );
