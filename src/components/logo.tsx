@@ -1,10 +1,9 @@
 import { PiggyBank } from 'lucide-react';
-import Link from 'next/link';
 import React from 'react';
 
 const Logo = () => {
   return (
-    <Link href="/" className="group flex items-center">
+    <div className="group flex items-center">
       <div className="relative mr-2 flex h-10 w-10 items-center justify-center">
         <div className="absolute inset-0">
           <div className="h-full w-full rounded-full border-2 border-primary/40 opacity-75 shadow-lg backdrop-blur-sm" />
@@ -25,7 +24,7 @@ const Logo = () => {
           <span className="absolute bottom-[-0.2em] left-0 h-[1px] w-full bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
         </span>
       </div>
-    </Link>
+    </div>
   );
 };
 
