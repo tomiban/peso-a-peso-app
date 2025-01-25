@@ -30,15 +30,27 @@ export function useCategories() {
     setState(previous => ({ ...previous, isLoading: true }));
     try {
       const response = await fetch(`/api/categories?type=${type}`);
-      if (!response.ok) throw new Error('Failed to fetch categories');
-      const apiResponse: ApiResponse = await response.json();
+
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: 'No error details available' }));
+        throw new Error(
+          `Error fetching categories: [${response.status}] ${response.statusText}${
+            errorData.message ? `: ${errorData.message}` : ''
+          }`,
+        );
+      }
+
+      const apiResponse = (await response.json()) as ApiResponse;
 
       // Actualizar estado con las categorías obtenidas de data
-      setState({
+      setState(previous => ({
+        ...previous,
         categories: apiResponse.data,
         isLoading: false,
         error: null,
-      });
+      }));
     } catch (error) {
       // Manejar errores actualizando el estado
       setState(previous => ({
