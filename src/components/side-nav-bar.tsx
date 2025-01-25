@@ -85,7 +85,7 @@ const SideBar = () => {
             <SidebarGroupContent>
               <SidebarMenu>
                 {menuItems.map(item => (
-                  <SideBarItem key={item.label} {...item} />
+                  <SideBarItem key={item.label} {...item} isOpen={open} />
                 ))}
               </SidebarMenu>
             </SidebarGroupContent>
@@ -151,25 +151,32 @@ function SideBarItem({
   link,
   icon: Icon,
   label,
+  isOpen,
 }: {
   link: string;
   icon: LucideIcon;
   label: string;
+  isOpen: boolean;
 }) {
   const pathname = usePathname();
   const isActive = pathname === link;
+
   return (
     <div className="relative flex items-center">
       <Link
         href={link}
         className={cn(
           buttonVariants({ variant: 'ghost' }),
-          'w-full justify-start text-base text-muted-foreground hover:text-foreground',
+          'w-full justify-start gap-2 text-base text-muted-foreground hover:text-foreground',
           isActive && 'text-foreground',
         )}
       >
-        <Icon className="h-4 w-4" />
-        {label}
+        <Icon className="h-4 w-4 shrink-0" />
+        <span
+          className={cn('transition-all duration-200', !isOpen && 'hidden')}
+        >
+          {label}
+        </span>
       </Link>
     </div>
   );
