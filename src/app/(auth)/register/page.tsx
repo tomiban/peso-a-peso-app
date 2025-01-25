@@ -19,7 +19,7 @@ export default async function RegisterPage() {
   if (session) redirect('/');
 
   return (
-    <div className="container flex min-h-[calc(100vh-4rem)] items-center justify-center">
+    <div className="container flex items-center justify-center">
       <Card className="glass-card mx-auto w-full max-w-sm">
         <CardHeader className="space-y-1">
           <CardTitle className="text-center text-2xl font-bold">

@@ -18,8 +18,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'P2P App',
-  description: 'App para llevar el control de tus gastos e ingresos',
+  title: 'Peso a Peso App',
+  description: 'Administra facilmente tus gastos e ingresos',
 };
 
 export default function RootLayout({
