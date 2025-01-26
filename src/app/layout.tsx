@@ -2,6 +2,7 @@ import './globals.css';
 
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
+import { SessionProvider } from 'next-auth/react';
 
 import RootProviders from '@/components/providers/root-providers';
 import { Toaster } from '@/components/ui/sonner';
@@ -17,8 +18,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'P2P App',
-  description: 'App para llevar el control de tus gastos e ingresos',
+  title: 'Peso a Peso App',
+  description: 'Administra facilmente tus gastos e ingresos',
 };
 
 export default function RootLayout({
@@ -32,7 +33,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Toaster richColors position="bottom-right" />
-        <RootProviders>{children}</RootProviders>
+        <SessionProvider>
+          <RootProviders>{children}</RootProviders>
+        </SessionProvider>
       </body>
     </html>
   );

@@ -1,17 +1,30 @@
 'use client';
+
 import {
   ChevronLeft,
   ChevronRight,
   CreditCard,
   LayoutDashboard,
   LineChart,
+  LogOut,
+  type LucideIcon,
   PiggyBank,
   Settings,
   UserRound,
   Wallet,
 } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
+import SkeletonWrapper from '@/components/skeleton-wrapper';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   Sidebar,
   SidebarContent,
@@ -25,20 +38,25 @@ import {
   SidebarSeparator,
   useSidebar,
 } from '@/components/ui/sidebar';
+import { logout } from '@/lib/actions';
 import { cn } from '@/lib/utils';
 
 import Logo from './logo';
+import { buttonVariants } from './ui/button';
 
 const SideBar = () => {
   const { open, toggleSidebar } = useSidebar();
+  const { data, status } = useSession();
+  const { user } = data || {};
+  const isLoading = status === 'loading';
 
   const menuItems = [
-    { title: 'Inicio', icon: LayoutDashboard, url: '/' },
-    { title: 'Transacciones', icon: CreditCard, url: '/transactions' },
-    { title: 'Presupuestos', icon: Wallet, url: '/budgets' },
-    { title: 'Ahorros', icon: PiggyBank, url: '/savings' },
-    { title: 'Análisis', icon: LineChart, url: '/analytics' },
-    { title: 'Configuración', icon: Settings, url: '/settings' },
+    { label: 'Inicio', icon: LayoutDashboard, link: '/' },
+    { label: 'Transacciones', icon: CreditCard, link: '/transactions' },
+    { label: 'Presupuestos', icon: Wallet, link: '/budgets' },
+    { label: 'Ahorros', icon: PiggyBank, link: '/savings' },
+    { label: 'Análisis', icon: LineChart, link: '/analytics' },
+    { label: 'Configuración', icon: Settings, link: '/settings' },
   ];
 
   return (
@@ -67,46 +85,107 @@ const SideBar = () => {
             <SidebarGroupContent>
               <SidebarMenu>
                 {menuItems.map(item => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      tooltip={item.title}
-                      className="transition-colors duration-200"
-                    >
-                      <Link
-                        href={item.url}
-                        className="flex h-[2.7rem] items-center gap-2 text-muted-foreground hover:text-foreground"
-                      >
-                        <item.icon className="h-4 w-4" />
-                        <span className={cn(!open && 'hidden')}>
-                          {item.title}
-                        </span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+                  <SideBarItem key={item.label} {...item} isOpen={open} />
                 ))}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
 
-        <SidebarFooter className={cn('p-4', !open && 'hidden')}>
+        <SidebarFooter className={cn('p-4')}>
           <SidebarSeparator className="mb-4" />
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">
-              <UserRound className="h-5 w-5 text-primary" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-sm font-medium">Tomás Banchio</span>
-              <span className="text-xs text-muted-foreground">
-                tbanchio15@gmail.com
-              </span>
-            </div>
-          </div>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SkeletonWrapper isLoading={isLoading}>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <SidebarMenuButton className="w-full py-6">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+                          {user?.image ? (
+                            <Image
+                              width={40}
+                              height={40}
+                              src={user?.image}
+                              alt={user?.name || ''}
+                              className="h-8 w-8 rounded-full"
+                            />
+                          ) : (
+                            <UserRound className="h-8 w-8 text-primary" />
+                          )}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium">
+                            {user?.name}
+                          </span>
+                          <span className="max-w-[150px] truncate text-xs text-muted-foreground">
+                            {user?.email}
+                          </span>
+                        </div>
+                      </div>
+                    </SidebarMenuButton>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    side="top"
+                    className="w-[--radix-popper-anchor-width]"
+                  >
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      onClick={async () => {
+                        try {
+                          await logout();
+                        } catch (error) {
+                          console.error('Error al cerrar sesión:', error);
+                        }
+                      }}
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Cerrar sesión</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </SkeletonWrapper>
+            </SidebarMenuItem>
+          </SidebarMenu>
         </SidebarFooter>
       </Sidebar>
     </div>
   );
 };
+
+function SideBarItem({
+  link,
+  icon: Icon,
+  label,
+  isOpen,
+}: {
+  link: string;
+  icon: LucideIcon;
+  label: string;
+  isOpen: boolean;
+}) {
+  const pathname = usePathname();
+  const isActive = pathname === link;
+
+  return (
+    <div className="relative flex items-center">
+      <Link
+        href={link}
+        className={cn(
+          buttonVariants({ variant: 'ghost' }),
+          'w-full justify-start gap-2 text-base text-muted-foreground hover:text-foreground',
+          isActive && 'text-foreground',
+        )}
+      >
+        <Icon className="h-4 w-4 shrink-0" />
+        <span
+          className={cn('transition-all duration-200', !isOpen && 'hidden')}
+        >
+          {label}
+        </span>
+      </Link>
+    </div>
+  );
+}
 
 export default SideBar;

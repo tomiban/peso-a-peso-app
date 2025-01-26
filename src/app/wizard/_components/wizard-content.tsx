@@ -17,11 +17,11 @@ import CurrencySelector from './currency-selector';
 
 function WizardContent({ name }: { name: string }) {
   return (
-    <div className="mx-auto max-w-2xl space-y-6 px-4">
+    <div className="mx-auto max-w-2xl space-y-8 px-4">
       <div className="text-center">
         <h1 className="text-3xl">
           ¡Bienvenido,{' '}
-          <span className="font-bold">{name.toLocaleUpperCase()} 💰</span>
+          <span className="font-bold">{name.toLocaleUpperCase()}! 💰</span>
         </h1>
         <h2 className="mt-4 text-lg text-muted-foreground">
           Configura tu moneda principal para gestionar tus finanzas
@@ -50,7 +50,7 @@ function WizardContent({ name }: { name: string }) {
         <Link href="/">Estoy listo para comenzar!</Link>
       </Button>
 
-      <div className="flex justify-center">
+      <div className="flex justify-center pt-10">
         <Logo />
       </div>
     </div>
