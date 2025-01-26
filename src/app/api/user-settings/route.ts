@@ -40,7 +40,6 @@ export async function GET(_: NextRequest) {
       },
     );
   } catch (error) {
-
     console.error('Error:', error instanceof Error ? error.message : error);
 
     return new NextResponse(
