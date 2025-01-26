@@ -7,18 +7,12 @@ import {
   LayoutDashboard,
   LineChart,
   LogOut,
-  type LucideIcon,
   PiggyBank,
   Settings,
-  UserRound,
   Wallet,
 } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 
-import SkeletonWrapper from '@/components/skeleton-wrapper';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,13 +36,14 @@ import { logout } from '@/lib/actions';
 import { cn } from '@/lib/utils';
 
 import Logo from './logo';
-import { buttonVariants } from './ui/button';
+import { SideBarFooterContent } from './sidebar-footer-content';
+import SideBarItem from './sidebar-item';
+import SkeletonWrapper from './skeleton-wrapper';
 
 const SideBar = () => {
   const { open, toggleSidebar } = useSidebar();
   const { data, status } = useSession();
-  const { user } = data || {};
-  const isLoading = status === 'loading';
+  const user = data?.user;
 
   const menuItems = [
     { label: 'Inicio', icon: LayoutDashboard, link: '/' },
@@ -95,34 +90,12 @@ const SideBar = () => {
         <SidebarFooter className={cn('p-4')}>
           <SidebarSeparator className="mb-4" />
           <SidebarMenu>
-            <SidebarMenuItem>
-              <SkeletonWrapper isLoading={isLoading}>
+            <SkeletonWrapper isLoading={status === 'loading'}>
+              <SidebarMenuItem>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <SidebarMenuButton className="w-full py-6">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-                          {user?.image ? (
-                            <Image
-                              width={40}
-                              height={40}
-                              src={user?.image}
-                              alt={user?.name || ''}
-                              className="h-8 w-8 rounded-full"
-                            />
-                          ) : (
-                            <UserRound className="h-8 w-8 text-primary" />
-                          )}
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-sm font-medium">
-                            {user?.name}
-                          </span>
-                          <span className="max-w-[150px] truncate text-xs text-muted-foreground">
-                            {user?.email}
-                          </span>
-                        </div>
-                      </div>
+                      <SideBarFooterContent {...user} />
                     </SidebarMenuButton>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
@@ -130,62 +103,21 @@ const SideBar = () => {
                     className="w-[--radix-popper-anchor-width]"
                   >
                     <DropdownMenuItem
+                      onClick={async () => await logout()}
                       className="cursor-pointer"
-                      onClick={async () => {
-                        try {
-                          await logout();
-                        } catch (error) {
-                          console.error('Error al cerrar sesión:', error);
-                        }
-                      }}
                     >
                       <LogOut className="mr-2 h-4 w-4" />
                       <span>Cerrar sesión</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </SkeletonWrapper>
-            </SidebarMenuItem>
+              </SidebarMenuItem>
+            </SkeletonWrapper>
           </SidebarMenu>
         </SidebarFooter>
       </Sidebar>
     </div>
   );
 };
-
-function SideBarItem({
-  link,
-  icon: Icon,
-  label,
-  isOpen,
-}: {
-  link: string;
-  icon: LucideIcon;
-  label: string;
-  isOpen: boolean;
-}) {
-  const pathname = usePathname();
-  const isActive = pathname === link;
-
-  return (
-    <div className="relative flex items-center">
-      <Link
-        href={link}
-        className={cn(
-          buttonVariants({ variant: 'ghost' }),
-          'w-full justify-start gap-2 text-base text-muted-foreground hover:text-foreground',
-          isActive && 'text-foreground',
-        )}
-      >
-        <Icon className="h-4 w-4 shrink-0" />
-        <span
-          className={cn('transition-all duration-200', !isOpen && 'hidden')}
-        >
-          {label}
-        </span>
-      </Link>
-    </div>
-  );
-}
 
 export default SideBar;
