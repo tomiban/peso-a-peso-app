@@ -1,31 +1,17 @@
 name: CI - Build Validation
-
 on:
   pull_request:
     branches: [dev]
-
+    
 jobs:
-  build:
+  validate-build:
     runs-on: ubuntu-latest
     steps:
-      # Checkout del código
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      # Configurar Node.js con la versión 20
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      # Instalar dependencias
-      - name: Install dependencies
-        run: npm install --legacy-peer-deps
-
-      # Generar tipos de Prisma
-      - name: Generate Prisma Client
-        run: npx prisma generate
-
-      # Verificar errores de compilación
-      - name: Build project
-        run: npm run build
+      - uses: actions/checkout@v4
+      
+      - name: Build Docker image
+        run: docker build . -t app-test
+      
+      - name: Verify build output
+        run: |
+          docker run --rm app-test npm run build
