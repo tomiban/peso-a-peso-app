@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 
+import SkeletonWrapper from '@/components/skeleton-wrapper';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,7 +39,6 @@ import { cn } from '@/lib/utils';
 import Logo from './logo';
 import { SideBarFooterContent } from './sidebar-footer-content';
 import SideBarItem from './sidebar-item';
-import SkeletonWrapper from './skeleton-wrapper';
 
 const SideBar = () => {
   const { open, toggleSidebar } = useSidebar();
