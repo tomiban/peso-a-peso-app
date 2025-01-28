@@ -12,21 +12,16 @@ export async function GET(request: NextRequest) {
   }
 
   const { searchParams } = new URL(request.url);
-  const from = searchParams.get('from');
-  const to = searchParams.get('to');
-
   const queryParams = OverviewQuerySchema.safeParse({
-    from,
-    to,
+    from: searchParams.get('from'),
+    to: searchParams.get('to'),
   });
 
   if (!queryParams.success) {
-    return {
-      status: 400,
-      json: {
-        error: queryParams.error.message,
-      },
-    };
+    return NextResponse.json(
+      { error: queryParams.error.message },
+      { status: 400 },
+    );
   }
 
   const stats = await getBalanceStats(
@@ -35,11 +30,13 @@ export async function GET(request: NextRequest) {
     queryParams.data.to,
   );
 
-  return NextResponse.json({
-    success: true,
-    status: 200,
-    data: stats,
-  });
+  return NextResponse.json(
+    {
+      success: true,
+      data: stats,
+    },
+    { status: 200 },
+  );
 }
 
 export type GetBalanceStatsResponseType = Awaited<
