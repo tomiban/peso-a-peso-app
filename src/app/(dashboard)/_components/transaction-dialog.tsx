@@ -1,9 +1,14 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { PopoverContent, PopoverTrigger } from '@radix-ui/react-popover';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { CalendarIcon } from 'lucide-react';
 import { ReactNode, useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import {
   Dialog,
   DialogContent,
@@ -21,6 +26,8 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Popover } from '@/components/ui/popover';
+import { useTransactions } from '@/contexts/transaction-context';
 import { TransactionType } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import {
@@ -42,10 +49,10 @@ export function TransactionDialog({ trigger, type }: Props) {
     resolver: zodResolver(CreateTransactionSchema),
     defaultValues: {
       type,
-      amount: 0,
       date: new Date(),
     },
   });
+  const { triggerRefresh } = useTransactions();
 
   const onSubmit = useCallback(
     async (data: CreateTransactionSchemaType) => {
@@ -58,17 +65,19 @@ export function TransactionDialog({ trigger, type }: Props) {
           toast.success('Transacción creada exitosamente', {
             id: toastId,
           });
+          triggerRefresh();
           form.reset();
-          setOpen(false);
         }
       } catch (error) {
         console.error('Error al crear transacción:', error);
         toast.error('Error al crear la transacción', {
           id: toastId,
         });
+      } finally {
+        setOpen(false);
       }
     },
-    [form, setOpen],
+    [form, triggerRefresh],
   );
 
   return (
@@ -141,25 +150,38 @@ export function TransactionDialog({ trigger, type }: Props) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Fecha</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="datetime-local"
-                      className="h-10"
-                      {...field}
-                      value={
-                        field.value instanceof Date
-                          ? field.value.toISOString().slice(0, 16)
-                          : ''
-                      }
-                      onChange={data => {
-                        field.onChange(
-                          data.target.value
-                            ? new Date(data.target.value)
-                            : new Date(),
-                        );
-                      }}
-                    />
-                  </FormControl>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            'h-10 w-full bg-background px-3 text-left font-normal',
+                            !field.value && 'text-muted-foreground',
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "d 'de' MMMM 'de' yyyy", {
+                              locale: es,
+                            })
+                          ) : (
+                            <span>Selecciona una fecha</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        locale={es}
+                        onSelect={field.onChange}
+                        initialFocus
+                        className="rounded-md border bg-secondary"
+                      />
+                    </PopoverContent>
+                  </Popover>
                   <FormMessage />
                 </FormItem>
               )}
@@ -167,7 +189,7 @@ export function TransactionDialog({ trigger, type }: Props) {
 
             <FormField
               control={form.control}
-              name="categoryId"
+              name="category"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Categoría</FormLabel>
