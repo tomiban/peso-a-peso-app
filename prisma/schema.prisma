@@ -96,7 +96,7 @@ model Transaction {
   id          String            @id @default(uuid())
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
-  amount      Decimal           @db.Decimal(15, 2)
+  amount      Float             @default(0.00)
   date        DateTime
   attachments String?
   category    String?
@@ -115,8 +115,8 @@ model SavingsGoal {
   id            String    @id @default(uuid())
   userId        String
   name          String
-  targetAmount  Decimal
-  currentAmount Decimal   @default(0.00)
+  targetAmount  Float    @default(0.00)
+  currentAmount Float    @default(0.00)
   deadline      DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -130,7 +130,7 @@ model Budget {
   id         String    @id @default(uuid())
   userId     String
   categoryId String
-  amount     Decimal   @db.Decimal(15, 2)
+  amount     Float    @default(0.00)
   period     String
   startDate  DateTime  @default(now())
   endDate    DateTime?
@@ -149,8 +149,8 @@ model MonthHistory {
   day     Int
   month   Int
   year    Int
-  income  Decimal @db.Decimal(15, 2)
-  expense Decimal @db.Decimal(15, 2)
+  income  Float    @default(0.00)
+  expense Float    @default(0.00)
 
 
   @@id([userId, year, month, day])
@@ -160,8 +160,8 @@ model YearHistory {
   userId  String
   month   Int
   year    Int
-  income  Decimal @db.Decimal(15, 2)
-  expense Decimal @db.Decimal(15, 2)
+  income  Float    @default(0.00)
+  expense Float    @default(0.00)
 
   @@id([userId, year, month])
 }

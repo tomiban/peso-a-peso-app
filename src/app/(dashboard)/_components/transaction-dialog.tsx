@@ -48,8 +48,11 @@ export function TransactionDialog({ trigger, type }: Props) {
   const form = useForm<CreateTransactionSchemaType>({
     resolver: zodResolver(CreateTransactionSchema),
     defaultValues: {
+      note: '', // Add this
       type,
       date: new Date(),
+      amount: 0, // Add this
+      category: '',
     },
   });
   const { triggerRefresh } = useTransactions();
@@ -58,8 +61,6 @@ export function TransactionDialog({ trigger, type }: Props) {
     async (data: CreateTransactionSchemaType) => {
       const toastId = toast.loading('Creando transacción...');
       try {
-        // TODO: Implementar server action para crear transacción
-        console.log(data);
         const result = await createTransaction(data);
         if (result) {
           toast.success('Transacción creada exitosamente', {
@@ -77,7 +78,7 @@ export function TransactionDialog({ trigger, type }: Props) {
         setOpen(false);
       }
     },
-    [form, triggerRefresh],
+    [form, triggerRefresh], // Añadir refreshKey aquí
   );
 
   return (

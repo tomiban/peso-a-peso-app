@@ -3,9 +3,9 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
 import db from '@/lib/db';
 
+import CategoriesStats from './_components/categories-stats';
 import DashboardOverview from './_components/dashboard-overview';
 import { RecentTransactions } from './_components/recent-transaction';
-import { SavingsGoal } from './_components/saving-goals';
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -30,13 +30,8 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
-        {/*   <ExpensesPieChart
-          userSettings={userSettings}
-          from={new Date('2025-01-01T00:00:00.000Z')}
-          to={new Date('2025-01-31T23:59:59.999Z')}
-        /> */}
-        <SavingsGoal />
+      <div className="grid w-full grid-cols-1 gap-4 sm:gap-6">
+        {<CategoriesStats userSettings={userSettings} />}
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 'use client';
 import { UserSettings } from '@prisma/client';
 import { TrendingDown, TrendingUp, Wallet } from 'lucide-react';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import SkeletonWrapper from '@/components/skeleton-wrapper';
 import { useTransactions } from '@/contexts/transaction-context';
@@ -26,39 +26,38 @@ interface APIResponse {
   data: StatsData;
 }
 
-const StatsCards = ({ from, to, userSettings }: Props) => {
+const StatsCards = ({ userSettings }: Props) => {
   const [stats, setStats] = useState<StatsData>({ expense: 0, income: 0 });
   const [loading, setLoading] = useState(true);
-  const { refreshKey } = useTransactions();
-
-  const fetchStats = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(
-        `/api/stats/balance?from=${DateToUTCDate(from)}&to=${DateToUTCDate(to)}`,
-      );
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const result: APIResponse = await response.json();
-      setStats(result.data);
-    } catch (error) {
-      console.error('Error fetching stats:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [from, to]); // Solo depende de from y to
+  const { dateRange, refreshKey } = useTransactions();
 
   // Efecto para la carga inicial y cuando cambian las fechas o configuración
   useEffect(() => {
-    fetchStats();
-  }, [fetchStats, userSettings]);
+    const fetchStats = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(
+          `/api/stats/balance?from=${DateToUTCDate(dateRange.from)}&to=${DateToUTCDate(dateRange.to)}`,
+          {
+            headers: {
+              'Cache-Control': 'no-cache',
+            },
+          },
+        );
 
-  // Efecto separado para manejar el refresh
-  useEffect(() => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const result: APIResponse = await response.json();
+        setStats(result.data);
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchStats();
-  }, [refreshKey, fetchStats]);
-
+  }, [dateRange.from, dateRange.to, refreshKey, userSettings]);
   const formatter = useMemo(
     () => GetFormattedForCurrency(userSettings.currency),
     [userSettings.currency],
