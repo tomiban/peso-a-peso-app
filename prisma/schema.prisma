@@ -8,7 +8,7 @@ datasource db {
 }
 
 model UserSettings {
-  userId   String @id 
+  userId   String @id
   currency String @db.VarChar(3)
   user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -25,12 +25,11 @@ model User {
   authenticators Authenticator[]
   budgets        Budget[]
   categories     Category[]
-  monthHistories MonthHistory[]
-  reminders      PaymentReminder[]
+
   savingsGoals   SavingsGoal[]
   transactions   Transaction[]
   settings       UserSettings?
-  yearHistories  YearHistory[]
+
   accounts       AuthAccount[]
 }
 
@@ -78,18 +77,16 @@ model Authenticator {
 }
 
 model Category {
-  createdAt    DateTime          @default(now())
-  name         String
-  userId       String
-  type         TransactionType?   @default(INCOME)
-  icon         String?
-  color        String?
-  id           String            @id @default(uuid())
-  updatedAt    DateTime          @updatedAt
-  budgets      Budget[]
-  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  reminders    PaymentReminder[]
-  transactions Transaction[]
+  createdAt   DateTime          @default(now())
+  name        String
+  userId      String
+  icon        String?
+  color       String?
+  id          String            @id @default(uuid())
+  updatedAt   DateTime          @updatedAt
+  type        TransactionType?  @default(INCOME)
+  budgets     Budget[]
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([name, userId, type])
   @@index([userId])
@@ -99,27 +96,27 @@ model Transaction {
   id          String            @id @default(uuid())
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
-  amount      Decimal           @db.Decimal(15, 2) 
+  amount      Float             @default(0.00)
   date        DateTime
-  type        TransactionType?   @default(INCOME)
   attachments String?
-  categoryId  String
-  note         String?
-  status      EstadoTransaccion @default(COMPLETADA)
+  category    String?
+  categoryIcon  String?
+  categoryColor String? 
+  type        TransactionType?  @default(INCOME)
   userId      String
-  category    Category          @relation(fields: [categoryId], references: [id])
+  note        String?
   user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@index([categoryId])
+
 }
 
 model SavingsGoal {
   id            String    @id @default(uuid())
   userId        String
   name          String
-  targetAmount  Decimal
-  currentAmount Decimal   @default(0.00)
+  targetAmount  Float    @default(0.00)
+  currentAmount Float    @default(0.00)
   deadline      DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -128,26 +125,12 @@ model SavingsGoal {
   @@index([userId])
 }
 
-model PaymentReminder {
-  id         String     @id @default(uuid())
-  userId     String
-  title      String
-  amount     Decimal
-  dueDate    DateTime
-  status     EstadoPago @default(PENDIENTE)
-  categoryId String?
-  category   Category?  @relation(fields: [categoryId], references: [id])
-  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([categoryId])
-}
 
 model Budget {
   id         String    @id @default(uuid())
   userId     String
   categoryId String
-  amount     Decimal   @db.Decimal(15, 2) 
+  amount     Float    @default(0.00)
   period     String
   startDate  DateTime  @default(now())
   endDate    DateTime?
@@ -166,30 +149,21 @@ model MonthHistory {
   day     Int
   month   Int
   year    Int
-  income  Decimal @db.Decimal(15, 2)
-  expense Decimal @db.Decimal(15, 2)
-  id      Int     @id @default(autoincrement())
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  income  Float    @default(0.00)
+  expense Float    @default(0.00)
 
-  @@index([userId, year, month, day])
+
+  @@id([userId, year, month, day])
 }
 
 model YearHistory {
   userId  String
   month   Int
   year    Int
-  income  Decimal @db.Decimal(15, 2)
-  expense Decimal @db.Decimal(15, 2)
-  id      Int     @id @default(autoincrement())
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  income  Float    @default(0.00)
+  expense Float    @default(0.00)
 
-  @@index([userId, year, month])
-}
-
-enum EstadoTransaccion {
-  COMPLETADA
-  PENDIENTE
-  CANCELADA
+  @@id([userId, year, month])
 }
 
 
@@ -198,9 +172,3 @@ enum TransactionType {
   EXPENSE
 }
 
-enum EstadoPago {
-  PENDIENTE
-  PAGADO
-  VENCIDO
-  CANCELADO
-}

@@ -1,10 +1,13 @@
+import { useCallback } from 'react';
+
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
 interface StatCardProps {
   title: string;
-  value: string;
+  value: number;
   icon: React.ReactNode;
+  formatter: Intl.NumberFormat;
   trend?: {
     value: number;
     isPositive: boolean;
@@ -16,21 +19,33 @@ export const StatCard = ({
   title,
   value,
   icon,
-  trend,
   className,
+  formatter,
 }: StatCardProps) => {
+  const formatFunction = useCallback(
+    (value: number) => {
+      return formatter.format(value);
+    },
+    [formatter],
+  );
+
   return (
     <Card className={cn('glass-card p-5 animate-in', className)}>
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <p className="text-2xl font-semibold">{value}</p>
+          <p className="text-2xl font-semibold">{formatFunction(value)}</p>
         </div>
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+        <div
+          className={cn(
+            'flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10',
+            className,
+          )}
+        >
           {icon}
         </div>
       </div>
-      {trend && (
+      {/*  {trend && (
         <div className="mt-4 flex items-center">
           <span
             className={cn(
@@ -45,7 +60,7 @@ export const StatCard = ({
             vs último mes
           </span>
         </div>
-      )}
+      )} */}
     </Card>
   );
 };

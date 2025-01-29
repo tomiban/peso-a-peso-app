@@ -4,12 +4,11 @@ import {
   ChevronLeft,
   ChevronRight,
   CreditCard,
+  DollarSignIcon,
   LayoutDashboard,
-  LineChart,
   LogOut,
   PiggyBank,
   Settings,
-  Wallet,
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 
@@ -48,10 +47,9 @@ const SideBar = () => {
   const menuItems = [
     { label: 'Inicio', icon: LayoutDashboard, link: '/' },
     { label: 'Transacciones', icon: CreditCard, link: '/transactions' },
-    { label: 'Presupuestos', icon: Wallet, link: '/budgets' },
     { label: 'Ahorros', icon: PiggyBank, link: '/savings' },
-    { label: 'Análisis', icon: LineChart, link: '/analytics' },
-    { label: 'Configuración', icon: Settings, link: '/settings' },
+    { label: 'Inversiones', icon: DollarSignIcon, link: '/investment' },
+    { label: 'Administración', icon: Settings, link: '/settings' },
   ];
 
   return (
@@ -92,25 +90,30 @@ const SideBar = () => {
           <SidebarMenu>
             <SkeletonWrapper isLoading={status === 'loading'}>
               <SidebarMenuItem>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <SidebarMenuButton className="w-full py-6">
-                      <SideBarFooterContent {...user} />
-                    </SidebarMenuButton>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    side="top"
-                    className="w-[--radix-popper-anchor-width]"
-                  >
-                    <DropdownMenuItem
-                      onClick={async () => await logout()}
-                      className="cursor-pointer"
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Cerrar sesión</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <SkeletonWrapper isLoading={status === 'loading'}>
+                  <SidebarMenuItem>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <SidebarMenuButton className="w-full py-6">
+                          <SideBarFooterContent {...user} />
+                          <SideBarFooterContent {...user} />
+                        </SidebarMenuButton>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        side="top"
+                        className="w-[--radix-popper-anchor-width]"
+                      >
+                        <DropdownMenuItem
+                          onClick={async () => await logout()}
+                          className="cursor-pointer"
+                        >
+                          <LogOut className="mr-2 h-4 w-4" />
+                          <span>Cerrar sesión</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </SidebarMenuItem>
+                </SkeletonWrapper>
               </SidebarMenuItem>
             </SkeletonWrapper>
           </SidebarMenu>

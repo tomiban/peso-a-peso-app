@@ -33,6 +33,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { useTransactions } from '@/contexts/transaction-context';
 import { TransactionType } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import {
@@ -51,11 +52,14 @@ interface Props {
 export function CreateCategoryDialog({ type, onCreated, onSuccess }: Props) {
   const [open, setOpen] = useState(false);
   const [emojiOpen, setEmojiOpen] = useState(false);
+  const { triggerRefresh } = useTransactions();
 
   const form = useForm<CreateCategorySchemaType>({
     resolver: zodResolver(CreateCategorySchema),
     defaultValues: {
       type,
+      icon: '',
+      name: '',
     },
   });
 
@@ -75,6 +79,7 @@ export function CreateCategoryDialog({ type, onCreated, onSuccess }: Props) {
 
           // Llamamos a onCreated (refresca la lista de categorías)
           onCreated?.();
+          triggerRefresh();
         }
       } catch (error) {
         console.error('Error al crear categoría:', error);
@@ -85,7 +90,7 @@ export function CreateCategoryDialog({ type, onCreated, onSuccess }: Props) {
         setOpen(false);
       }
     },
-    [setOpen, form, onSuccess, onCreated],
+    [form, onSuccess, onCreated, triggerRefresh],
   );
 
   return (

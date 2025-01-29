@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
+import { GetHexRandomColor } from '@/helpers/helpers';
 import { auth } from '@/lib/auth';
 import db from '@/lib/db';
 import {
@@ -24,11 +25,13 @@ export async function createCategory(form: CreateCategorySchemaType) {
     }
 
     const { name, icon, type } = parsedBody.data;
+    const color = GetHexRandomColor();
 
     const category = await db.category.create({
       data: {
         name,
         icon,
+        color,
         type,
         userId: session.user.id,
       },

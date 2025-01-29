@@ -10,7 +10,7 @@ export const CreateTransactionSchema = z.object({
   date: z.coerce.date({
     errorMap: () => ({ message: 'La fecha es inválida' }),
   }),
-  categoryId: z.string({
+  category: z.string({
     required_error: 'La categoría es obligatoria',
     invalid_type_error: 'La categoría debe ser un texto válido',
   }),
