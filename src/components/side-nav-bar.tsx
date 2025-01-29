@@ -90,25 +90,30 @@ const SideBar = () => {
           <SidebarMenu>
             <SkeletonWrapper isLoading={status === 'loading'}>
               <SidebarMenuItem>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <SidebarMenuButton className="w-full py-6">
-                      <SideBarFooterContent {...user} />
-                    </SidebarMenuButton>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    side="top"
-                    className="w-[--radix-popper-anchor-width]"
-                  >
-                    <DropdownMenuItem
-                      onClick={async () => await logout()}
-                      className="cursor-pointer"
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Cerrar sesión</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <SkeletonWrapper isLoading={status === 'loading'}>
+                  <SidebarMenuItem>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <SidebarMenuButton className="w-full py-6">
+                          <SideBarFooterContent {...user} />
+                          <SideBarFooterContent {...user} />
+                        </SidebarMenuButton>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        side="top"
+                        className="w-[--radix-popper-anchor-width]"
+                      >
+                        <DropdownMenuItem
+                          onClick={async () => await logout()}
+                          className="cursor-pointer"
+                        >
+                          <LogOut className="mr-2 h-4 w-4" />
+                          <span>Cerrar sesión</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </SidebarMenuItem>
+                </SkeletonWrapper>
               </SidebarMenuItem>
             </SkeletonWrapper>
           </SidebarMenu>
