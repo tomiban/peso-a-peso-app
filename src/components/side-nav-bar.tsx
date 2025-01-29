@@ -4,10 +4,8 @@ import {
   ChevronLeft,
   ChevronRight,
   CreditCard,
-  DollarSignIcon,
   LayoutDashboard,
   LogOut,
-  PiggyBank,
   Settings,
   UserRound,
 } from 'lucide-react';
@@ -49,9 +47,9 @@ const SideBar = ({ user }: Props) => {
   const menuItems = [
     { label: 'Inicio', icon: LayoutDashboard, link: '/' },
     { label: 'Transacciones', icon: CreditCard, link: '/transactions' },
-    { label: 'Ahorros', icon: PiggyBank, link: '/savings' },
-    { label: 'Inversiones', icon: DollarSignIcon, link: '/investment' },
-    { label: 'Administración', icon: Settings, link: '/settings' },
+    /*     { label: 'Ahorros', icon: PiggyBank, link: '/savings' },
+    { label: 'Inversiones', icon: DollarSignIcon, link: '/investment' }, */
+    { label: 'Administración', icon: Settings, link: '/manage' },
   ];
 
   return (

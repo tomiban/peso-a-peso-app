@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Category } from '@prisma/client';
 import { DialogDescription } from '@radix-ui/react-dialog';
 import { CircleOff, PlusCircle } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { ReactNode, useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -47,9 +47,16 @@ interface Props {
   type: TransactionType;
   onSuccess?: (category: Category) => void;
   onCreated?: () => void;
+  trigger?: ReactNode;
+  className?: string;
 }
 
-export function CreateCategoryDialog({ type, onCreated, onSuccess }: Props) {
+export function CreateCategoryDialog({
+  type,
+  onCreated,
+  onSuccess,
+  className,
+}: Props) {
   const [open, setOpen] = useState(false);
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -101,7 +108,10 @@ export function CreateCategoryDialog({ type, onCreated, onSuccess }: Props) {
         <Button
           variant="ghost"
           size="sm"
-          className="w-full justify-start gap-2 rounded-none"
+          className={cn(
+            className ?? 'w-full',
+            'justify-start gap-2 rounded-sm',
+          )}
         >
           <PlusCircle className="h-4 w-4" />
           Crear nueva categoría
@@ -211,7 +221,7 @@ export function CreateCategoryDialog({ type, onCreated, onSuccess }: Props) {
               >
                 Cancelar
               </Button>
-              <Button type="submit" variant="outline" disabled={isSubmitting}>
+              <Button type="submit" variant="default" disabled={isSubmitting}>
                 {isSubmitting ? 'Creando...' : 'Crear'}
               </Button>
             </DialogFooter>

@@ -54,9 +54,10 @@ export default function DashboardOverview({ userSettings }: Props) {
           }}
         />
       </div>
-      <ActionButtons />
-
-      <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-3 lg:grid-cols-3">
+      <div className="">
+        <ActionButtons />
+      </div>
+      <div className="grid grid-cols-1 gap-x-4 md:grid-cols-3">
         <StatsCards
           userSettings={userSettings}
           from={dateRange.from}

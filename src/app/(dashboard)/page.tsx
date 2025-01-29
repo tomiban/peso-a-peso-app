@@ -18,20 +18,20 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6 py-8 sm:space-y-8">
+    <div className="space-y-6 py-6">
       <DashboardOverview userSettings={userSettings} />
 
-      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
+      <div className="m-[0] grid grid-cols-1 lg:grid-cols-3">
         <div className="lg:col-span-3">
-          {/*  <ExpenseChart userSettings={userSettings} /> */}
+          {/* <ExpenseChart userSettings={userSettings} /> */}
         </div>
-        <div>
+        <div className="lg:col-span-3">
           <RecentTransactions />
         </div>
       </div>
 
-      <div className="grid w-full grid-cols-1 gap-4 sm:gap-6">
-        {<CategoriesStats userSettings={userSettings} />}
+      <div className="grid w-full grid-cols-1 gap-3">
+        <CategoriesStats userSettings={userSettings} />
       </div>
     </div>
   );
