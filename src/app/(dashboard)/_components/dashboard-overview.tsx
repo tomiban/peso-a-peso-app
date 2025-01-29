@@ -1,9 +1,18 @@
 'use client';
 import { UserSettings } from '@prisma/client';
 import { differenceInDays } from 'date-fns';
+import dynamic from 'next/dynamic';
 import { toast } from 'sonner';
 
-import { DateRangePicker } from '@/components/ui/date-range-picker';
+const DateRangePicker = dynamic(
+  () =>
+    import('@/components/ui/date-range-picker').then(
+      module_ => module_.DateRangePicker,
+    ),
+  {
+    ssr: false,
+  },
+);
 import { useTransactions } from '@/contexts/transaction-context';
 import { MAX_DATE_RANGE_DAYS } from '@/lib/constants';
 
@@ -45,9 +54,10 @@ export default function DashboardOverview({ userSettings }: Props) {
           }}
         />
       </div>
-      <ActionButtons />
-
-      <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-3 lg:grid-cols-3">
+      <div className="">
+        <ActionButtons />
+      </div>
+      <div className="grid grid-cols-1 gap-x-4 md:grid-cols-3">
         <StatsCards
           userSettings={userSettings}
           from={dateRange.from}

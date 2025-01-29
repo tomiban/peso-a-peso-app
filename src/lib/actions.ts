@@ -3,6 +3,7 @@ import bcryptjs from 'bcryptjs';
 import { AuthError } from 'next-auth';
 import { z } from 'zod';
 
+import { LoginResponse } from '@/app/(auth)/login/login-form';
 import { signIn, signOut } from '@/lib/auth';
 import { LoginSchema, RegisterSchema } from '@/schema/auth';
 
@@ -58,7 +59,9 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
   }
 };
 
-export async function login(values: z.infer<typeof LoginSchema>) {
+export async function login(
+  values: z.infer<typeof LoginSchema>,
+): Promise<LoginResponse> {
   try {
     await signIn('credentials', {
       email: values.email,

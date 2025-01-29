@@ -4,15 +4,14 @@ import {
   ChevronLeft,
   ChevronRight,
   CreditCard,
-  DollarSignIcon,
   LayoutDashboard,
   LogOut,
-  PiggyBank,
   Settings,
+  UserRound,
 } from 'lucide-react';
-import { useSession } from 'next-auth/react';
+import Image from 'next/image';
+import { type User } from 'next-auth';
 
-import SkeletonWrapper from '@/components/skeleton-wrapper';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,20 +35,21 @@ import { logout } from '@/lib/actions';
 import { cn } from '@/lib/utils';
 
 import Logo from './logo';
-import { SideBarFooterContent } from './sidebar-footer-content';
 import SideBarItem from './sidebar-item';
 
-const SideBar = () => {
+export type Props = {
+  user: User;
+};
+
+const SideBar = ({ user }: Props) => {
   const { open, toggleSidebar } = useSidebar();
-  const { data, status } = useSession();
-  const user = data?.user;
 
   const menuItems = [
     { label: 'Inicio', icon: LayoutDashboard, link: '/' },
     { label: 'Transacciones', icon: CreditCard, link: '/transactions' },
-    { label: 'Ahorros', icon: PiggyBank, link: '/savings' },
-    { label: 'Inversiones', icon: DollarSignIcon, link: '/investment' },
-    { label: 'Administración', icon: Settings, link: '/settings' },
+    /*     { label: 'Ahorros', icon: PiggyBank, link: '/savings' },
+    { label: 'Inversiones', icon: DollarSignIcon, link: '/investment' }, */
+    { label: 'Administración', icon: Settings, link: '/manage' },
   ];
 
   return (
@@ -85,37 +85,52 @@ const SideBar = () => {
           </SidebarGroup>
         </SidebarContent>
 
-        <SidebarFooter className={cn('p-4')}>
-          <SidebarSeparator className="mb-4" />
+        <SidebarFooter className="px-4 py-3">
+          <SidebarSeparator className="mb-3" />
           <SidebarMenu>
-            <SkeletonWrapper isLoading={status === 'loading'}>
-              <SidebarMenuItem>
-                <SkeletonWrapper isLoading={status === 'loading'}>
-                  <SidebarMenuItem>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <SidebarMenuButton className="w-full py-6">
-                          <SideBarFooterContent {...user} />
-                          <SideBarFooterContent {...user} />
-                        </SidebarMenuButton>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        side="top"
-                        className="w-[--radix-popper-anchor-width]"
-                      >
-                        <DropdownMenuItem
-                          onClick={async () => await logout()}
-                          className="cursor-pointer"
-                        >
-                          <LogOut className="mr-2 h-4 w-4" />
-                          <span>Cerrar sesión</span>
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </SidebarMenuItem>
-                </SkeletonWrapper>
-              </SidebarMenuItem>
-            </SkeletonWrapper>
+            <SidebarMenuItem>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <SidebarMenuButton className="w-full rounded-lg px-3 py-6 transition hover:bg-muted">
+                    <div className="flex items-center gap-3">
+                      <div className="relative flex h-9 w-9 items-center justify-center rounded-full">
+                        {user.image ? (
+                          <Image
+                            width={36}
+                            height={36}
+                            src={user.image}
+                            alt={user.name || ''}
+                            className="h-full w-full rounded-full object-cover"
+                          />
+                        ) : (
+                          <UserRound className="h-5 w-5 text-primary" />
+                        )}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium text-foreground">
+                          {user.name}
+                        </span>
+                        <span className="max-w-[150px] truncate text-xs text-muted-foreground">
+                          {user.email}
+                        </span>
+                      </div>
+                    </div>
+                  </SidebarMenuButton>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  side="top"
+                  className="w-[--radix-popper-anchor-width]"
+                >
+                  <DropdownMenuItem
+                    onClick={async () => await logout()}
+                    className="flex cursor-pointer items-center gap-2 px-3 py-2 text-sm transition hover:bg-muted"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Cerrar sesión</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarFooter>
       </Sidebar>
