@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
+import { Transaction } from '@prisma/client';
 import { ArrowDownIcon, ArrowUpIcon, TrendingUpDown } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -8,17 +8,6 @@ import { Card } from '@/components/ui/card';
 import { useTransactions } from '@/contexts/transaction-context';
 import { formatDate } from '@/lib/date-format';
 import { cn } from '@/lib/utils';
-
-interface Transaction {
-  id: string;
-  type: 'INCOME' | 'EXPENSE';
-  amount: number;
-  date: Date;
-  description?: string;
-  category?: {
-    name: string;
-  };
-}
 
 export const RecentTransactions = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -37,12 +26,8 @@ export const RecentTransactions = () => {
       const transactions = await response.json();
 
       if (transactions.success) {
-        setRecentTransactions(
-          transactions.data.map((tx: any) => ({
-            ...tx,
-            date: new Date(tx.date),
-          })),
-        );
+        console.log(transactions);
+        setRecentTransactions(transactions.data);
       } else {
         throw new Error(transactions.error || 'Error desconocido');
       }
@@ -96,8 +81,8 @@ export const RecentTransactions = () => {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="mr-10 w-32 truncate text-sm font-medium sm:w-48 md:w-64">
-                      {transaction.description ||
-                        transaction.category?.name ||
+                      {transaction.note ||
+                        transaction.category ||
                         'Transacción'}
                     </p>
                     <p className="w-24 truncate text-xs text-muted-foreground sm:w-32">

@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
         userId,
         ...(type && { type }), // Filtro opcional por tipo
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { date: 'desc' },
       take: limit, // Usar limit si viene
     });
 
