@@ -46,12 +46,13 @@ import { createCategory } from '../_actions/categories';
 interface Props {
   type: TransactionType;
   onSuccess?: (category: Category) => void;
-  onCreated?: () => void; // Nueva prop para refrescar las categorías
+  onCreated?: () => void;
 }
 
 export function CreateCategoryDialog({ type, onCreated, onSuccess }: Props) {
   const [open, setOpen] = useState(false);
   const [emojiOpen, setEmojiOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { triggerRefresh } = useTransactions();
 
   const form = useForm<CreateCategorySchemaType>({
@@ -65,20 +66,21 @@ export function CreateCategoryDialog({ type, onCreated, onSuccess }: Props) {
 
   const onSubmit = useCallback(
     async (data: CreateCategorySchemaType) => {
+      setIsSubmitting(true);
       const toastId = toast.loading('Creando categoría...');
       try {
-        // 1. Llamamos a la server action para crear la categoría
         const result = await createCategory(data);
         if (result) {
           toast.success(`Categoría ${result.name} creada exitosamente`, {
             id: toastId,
           });
           form.reset();
-          // Llamamos a onSuccess (selecciona la nueva categoría)
-          onSuccess?.(result);
 
-          // Llamamos a onCreated (refresca la lista de categorías)
-          onCreated?.();
+          setTimeout(() => {
+            setOpen(false);
+            onSuccess?.(result);
+            onCreated?.();
+          }, 1000);
           triggerRefresh();
         }
       } catch (error) {
@@ -87,7 +89,7 @@ export function CreateCategoryDialog({ type, onCreated, onSuccess }: Props) {
           id: toastId,
         });
       } finally {
-        setOpen(false);
+        setIsSubmitting(false);
       }
     },
     [form, onSuccess, onCreated, triggerRefresh],
@@ -120,16 +122,12 @@ export function CreateCategoryDialog({ type, onCreated, onSuccess }: Props) {
             </span>
           </DialogTitle>
           <DialogDescription>
-            Las caregorias son utilizadas para agrupar tus transacciones
+            Las categorías son utilizadas para agrupar tus transacciones
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form
-            // eslint-disable-next-line unicorn/prevent-abbreviations
-            onSubmit={form.handleSubmit(onSubmit, e => console.log(e))}
-            className="space-y-6"
-          >
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={form.control}
               name="name"
@@ -168,14 +166,14 @@ export function CreateCategoryDialog({ type, onCreated, onSuccess }: Props) {
                                 {field.value}
                               </span>
                               <p className="text-xs text-muted-foreground">
-                                Click para cambiar
+                                Haz clic para cambiar
                               </p>
                             </div>
                           ) : (
                             <div className="flex flex-col items-center gap-2">
                               <CircleOff className="h-12 w-12 text-muted-foreground" />
                               <p className="text-xs text-muted-foreground">
-                                Click para seleccionar
+                                Haz clic para seleccionar
                               </p>
                             </div>
                           )}
@@ -205,6 +203,7 @@ export function CreateCategoryDialog({ type, onCreated, onSuccess }: Props) {
               <Button
                 type="button"
                 variant="secondary"
+                disabled={isSubmitting}
                 onClick={() => {
                   setOpen(false);
                   form.reset();
@@ -212,8 +211,8 @@ export function CreateCategoryDialog({ type, onCreated, onSuccess }: Props) {
               >
                 Cancelar
               </Button>
-              <Button type="submit" variant="outline">
-                Crear
+              <Button type="submit" variant="outline" disabled={isSubmitting}>
+                {isSubmitting ? 'Creando...' : 'Crear'}
               </Button>
             </DialogFooter>
           </form>

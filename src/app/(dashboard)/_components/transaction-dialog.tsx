@@ -45,13 +45,14 @@ interface Props {
 
 export function TransactionDialog({ trigger, type }: Props) {
   const [open, setOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const form = useForm<CreateTransactionSchemaType>({
     resolver: zodResolver(CreateTransactionSchema),
     defaultValues: {
-      note: '', // Add this
+      note: '',
       type,
       date: new Date(),
-      amount: 0, // Add this
+      amount: 0,
       category: '',
     },
   });
@@ -59,6 +60,7 @@ export function TransactionDialog({ trigger, type }: Props) {
 
   const onSubmit = useCallback(
     async (data: CreateTransactionSchemaType) => {
+      setIsSubmitting(true);
       const toastId = toast.loading('Creando transacción...');
       try {
         const result = await createTransaction(data);
@@ -68,6 +70,7 @@ export function TransactionDialog({ trigger, type }: Props) {
           });
           triggerRefresh();
           form.reset();
+          setOpen(false);
         }
       } catch (error) {
         console.error('Error al crear transacción:', error);
@@ -75,10 +78,10 @@ export function TransactionDialog({ trigger, type }: Props) {
           id: toastId,
         });
       } finally {
-        setOpen(false);
+        setIsSubmitting(false);
       }
     },
-    [form, triggerRefresh], // Añadir refreshKey aquí
+    [form, triggerRefresh],
   );
 
   return (
@@ -209,6 +212,7 @@ export function TransactionDialog({ trigger, type }: Props) {
               <Button
                 type="button"
                 variant="secondary"
+                disabled={isSubmitting}
                 onClick={() => {
                   setOpen(false);
                   form.reset();
@@ -216,7 +220,9 @@ export function TransactionDialog({ trigger, type }: Props) {
               >
                 Cancelar
               </Button>
-              <Button type="submit">Guardar</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Guardando...' : 'Guardar'}
+              </Button>
             </DialogFooter>
           </form>
         </Form>

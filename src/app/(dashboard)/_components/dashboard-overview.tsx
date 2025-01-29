@@ -1,9 +1,18 @@
 'use client';
 import { UserSettings } from '@prisma/client';
 import { differenceInDays } from 'date-fns';
+import dynamic from 'next/dynamic';
 import { toast } from 'sonner';
 
-import { DateRangePicker } from '@/components/ui/date-range-picker';
+const DateRangePicker = dynamic(
+  () =>
+    import('@/components/ui/date-range-picker').then(
+      module_ => module_.DateRangePicker,
+    ),
+  {
+    ssr: false,
+  },
+);
 import { useTransactions } from '@/contexts/transaction-context';
 import { MAX_DATE_RANGE_DAYS } from '@/lib/constants';
 

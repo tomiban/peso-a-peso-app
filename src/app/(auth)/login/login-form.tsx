@@ -20,8 +20,40 @@ import { Input } from '@/components/ui/input';
 import { login } from '@/lib/actions';
 import { LoginSchema } from '@/schema/auth';
 
+interface LoginError {
+  error: string;
+  message?: string;
+  status?: number;
+}
+interface LoginSuccess {
+  success: true;
+}
+
+interface LoginError {
+  error: string;
+}
+
+export type LoginResponse = LoginSuccess | LoginError;
+
+function getErrorMessage(error: string): string {
+  switch (error) {
+    case 'Credenciales incorrectas': {
+      return 'El correo o la contraseña son incorrectos';
+    }
+    case 'Error: Credenciales incorrectas': {
+      return 'El correo o la contraseña son incorrectos';
+    }
+    case 'CallbackRouteError': {
+      return 'El correo o la contraseña son incorrectos';
+    }
+    default: {
+      return 'Ocurrió un error al iniciar sesión. Por favor intenta nuevamente';
+    }
+  }
+}
+
 export const LoginForm = () => {
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<LoginError | null>(null);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -36,11 +68,25 @@ export const LoginForm = () => {
   async function onSubmit(values: z.infer<typeof LoginSchema>) {
     setError(null);
     startTransition(async () => {
-      const response = await login(values);
-      if (response.error) {
-        setError(response.error);
-      } else {
+      try {
+        const response = (await login(values)) as LoginResponse;
+
+        if ('error' in response) {
+          setError({
+            error: 'Error de autenticación',
+            message: getErrorMessage(response.error),
+          });
+          return;
+        }
+
         router.push('/');
+      } catch {
+        setError({
+          error: 'Error del sistema',
+          message:
+            'No pudimos conectarnos al servidor. Por favor intenta más tarde.',
+          status: 500,
+        });
       }
     });
   }
@@ -50,7 +96,15 @@ export const LoginForm = () => {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         {error && (
           <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
+            <AlertDescription>
+              <div className="font-semibold">{error.error}</div>
+              <div className="text-sm">{error.message}</div>
+              {error.status && error.status >= 500 && (
+                <div className="mt-1 text-xs">
+                  Código de error: {error.status}
+                </div>
+              )}
+            </AlertDescription>
           </Alert>
         )}
         <FormField
