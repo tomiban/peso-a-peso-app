@@ -293,7 +293,7 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
 
   useEffect(() => {
     checkPreset();
-  }, [checkPreset, range]);
+  }, [range]);
 
   const PresetButton = ({
     preset,

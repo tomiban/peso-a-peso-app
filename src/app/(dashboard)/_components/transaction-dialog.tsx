@@ -70,7 +70,6 @@ export function TransactionDialog({ trigger, type }: Props) {
           });
           triggerRefresh();
           form.reset();
-          setOpen(false);
         }
       } catch (error) {
         console.error('Error al crear transacción:', error);
@@ -79,6 +78,7 @@ export function TransactionDialog({ trigger, type }: Props) {
         });
       } finally {
         setIsSubmitting(false);
+        setOpen(false);
       }
     },
     [form, triggerRefresh],
