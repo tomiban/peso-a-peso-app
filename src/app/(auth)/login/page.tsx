@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { auth } from '@/lib/auth';
+import { auth, isGoogleEnabled } from '@/lib/auth';
 
 import { LoginForm } from './login-form';
 
@@ -32,18 +32,22 @@ export default async function LoginPage() {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          <GoogleLogin />
+          {isGoogleEnabled && (
+            <>
+              <GoogleLogin enabled={isGoogleEnabled} />
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-t-secondary/50" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="px-2 text-muted-foreground">
-                O continua con tu email
-              </span>
-            </div>
-          </div>
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-t-secondary/50" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="px-2 text-muted-foreground">
+                    O continua con tu email
+                  </span>
+                </div>
+              </div>
+            </>
+          )}
 
           <LoginForm />
         </CardContent>

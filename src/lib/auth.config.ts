@@ -3,6 +3,8 @@ import type { NextAuthConfig } from 'next-auth';
 import database from './db';
 
 export const authConfig = {
+  // Necesario fuera de Vercel: sin esto NextAuth rechaza el host con UntrustedHost.
+  trustHost: true,
   session: {
     strategy: 'jwt',
   },

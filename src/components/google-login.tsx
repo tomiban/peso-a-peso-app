@@ -7,8 +7,10 @@ import { googleLogin } from '@/lib/actions';
 
 import { Alert, AlertDescription } from './ui/alert';
 
-export const GoogleLogin = () => {
+export const GoogleLogin = ({ enabled }: { enabled: boolean }) => {
   const [error, setError] = useState<string | null>(null);
+
+  if (!enabled) return null;
 
   return (
     <div>

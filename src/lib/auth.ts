@@ -8,10 +8,21 @@ import { LoginSchema } from '@/schema/auth';
 import { authConfig } from './auth.config';
 import database from './db';
 
+export const isGoogleEnabled = Boolean(
+  process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET,
+);
+
 export const { auth, signIn, signOut, handlers } = NextAuth({
   ...authConfig,
   providers: [
-    Google,
+    ...(isGoogleEnabled
+      ? [
+          Google({
+            clientId: process.env.AUTH_GOOGLE_ID,
+            clientSecret: process.env.AUTH_GOOGLE_SECRET,
+          }),
+        ]
+      : []),
     Credentials({
       name: 'credentials',
       credentials: {
