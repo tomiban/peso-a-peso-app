@@ -24,17 +24,3 @@ jobs:
         with:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/peso-a-peso-app:latest
-
-      # Autenticación con Google Cloud
-      - id: 'auth'
-        uses: 'google-github-actions/auth@v2'
-        with:
-          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
-
-      # Deploy a Cloud Run
-      - name: Deploy to Cloud Run
-        uses: google-github-actions/deploy-cloudrun@v2
-        with:
-          service: 'peso-a-peso-app'
-          region: 'southamerica-east1'
-          image: '${{ secrets.DOCKER_USERNAME }}/peso-a-peso-app:latest'
