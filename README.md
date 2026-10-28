@@ -4,6 +4,19 @@ Aplicación web para registrar ingresos y egresos, agruparlos por categoría y s
 mensual y anual. Cada usuario ve solo sus datos, con autenticación propia y dashboards con
 filtros por período.
 
+## Demo
+
+**https://peso-a-peso-app-five.vercel.app**
+
+| | |
+| --- | --- |
+| Email | `demo@neon.test` |
+| Contraseña | `demo1234` |
+
+Corre sobre Neon (branch `production`) con datos de prueba. También podés crear tu propio
+usuario desde `/register`. La primera visita puede tardar unos segundos: Neon suspende el
+compute por inactividad y despierta en el primer request.
+
 ## Stack
 
 | Capa | Tecnología |
